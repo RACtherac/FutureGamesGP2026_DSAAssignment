@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5a22159e56cd65f479588442bd0d14e5, type: 3}
   m_Name: ReadEmployeesTask
   m_EditorClassIdentifier: Assembly-CSharp::Environment.Tasks.ReadEmployeesTask
-  fileName: employees.json
-  nextTask: {fileID: 0}
+  fileName: Employees.json
+  nextTask: {fileID: 11400000, guid: abffed14ae9631b4f80e58d41e5d5974, type: 2}

@@ -25,6 +25,10 @@ namespace Environment.Tasks {
                     $"Engine clearance: " +
                     $"{employees[i].hasEngineRoomClearance}"
                 );
+                Debug.Log(
+                    $"Last entrance: {employees[i].lastEntranceInEngineRoom}, " +
+                    $"Last exit: {employees[i].lastExitFromEngineRoom}"
+                );
             }
 
 
