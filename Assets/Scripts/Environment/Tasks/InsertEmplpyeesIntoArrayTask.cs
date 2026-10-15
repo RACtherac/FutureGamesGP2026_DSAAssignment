@@ -23,12 +23,11 @@ namespace Environment.Tasks {
                     $"Array[{i}]: {employees[i].name}, " +
                     $"ID: {employees[i].employeeId}, " +
                     $"Engine clearance: " +
-                    $"{employees[i].hasEngineRoomClearance}"
-                );
-                Debug.Log(
+                    $"{employees[i].hasEngineRoomClearance}" +
                     $"Last entrance: {employees[i].lastEntranceInEngineRoom}, " +
                     $"Last exit: {employees[i].lastExitFromEngineRoom}"
                 );
+                
             }
 
 
