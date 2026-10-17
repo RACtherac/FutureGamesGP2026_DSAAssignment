@@ -64,7 +64,7 @@ public class ComputerTerminalUI : MonoBehaviour {
             terminalPanel.SetActive(true);
 
         if(headerText != null)
-            headerText.text = "VAULT-TEC // PERSONNEL TERMINAL";
+            headerText.text = "YPSILON 13 // PERSONNEL TERMINAL";
 
         if(statusText != null)
             statusText.text = "";
