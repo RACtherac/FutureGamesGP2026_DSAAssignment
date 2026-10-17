@@ -19,7 +19,9 @@ public class ComputerTerminalUI : MonoBehaviour {
     [SerializeField] private TMP_Text footerText;
 
     [Header("Loading Bar")]
+    [SerializeField] private GameObject loadingBarContainer;
     [SerializeField] private RectTransform progressBarFill;
+
 
     [Header("Animation Settings")]
     [SerializeField] private float lineDelay = 0.45f;
@@ -64,7 +66,7 @@ public class ComputerTerminalUI : MonoBehaviour {
             terminalPanel.SetActive(true);
 
         if(headerText != null)
-            headerText.text = "YPSILON 13 // PERSONNEL TERMINAL";
+            headerText.text = "YPSILON 13 // SURVEILLACE TERMINAL";
 
         if(statusText != null)
             statusText.text = "";
@@ -79,6 +81,9 @@ public class ComputerTerminalUI : MonoBehaviour {
             footerText.text = "INITIALIZING SYSTEM...";
 
         SetProgress(0f);
+
+        if(loadingBarContainer != null)
+            loadingBarContainer.SetActive(true);
 
         if(bootCoroutine != null)
             StopCoroutine(bootCoroutine);
@@ -130,6 +135,10 @@ public class ComputerTerminalUI : MonoBehaviour {
         yield return new WaitForSecondsRealtime(lineDelay);
 
         LoadEmployeeData();
+
+        // Hide the loading bar after loading is complete.
+        if(loadingBarContainer != null)
+            loadingBarContainer.SetActive(false);
 
         if(footerText != null)
             footerText.text = "PRESS ESC TO LOG OUT";
