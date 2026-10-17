@@ -52,6 +52,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b5592b25c44429b914438d9e820ae26, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Computer
+  testTask: {fileID: 0}
 --- !u!1001 &1440861543908505829
 PrefabInstance:
   m_ObjectHideFlags: 0
