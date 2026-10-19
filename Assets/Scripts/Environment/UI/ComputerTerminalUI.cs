@@ -154,14 +154,12 @@ public class ComputerTerminalUI : MonoBehaviour {
         bool loaded = LoadEmployeeData();
 
         if(loaded) {
-            // Hide boot UI after loading has finished.
             if(statusText != null)
                 statusText.gameObject.SetActive(false);
 
             if(loadingBarContainer != null)
                 loadingBarContainer.SetActive(false);
 
-            // Show the database only after the boot UI is gone.
             if(employeeDatabasePanel != null)
                 employeeDatabasePanel.SetActive(true);
 
@@ -292,7 +290,6 @@ public class ComputerTerminalUI : MonoBehaviour {
                 "RECORDS FOUND: " + displayedCount;
         }
 
-        // Refresh layout and return the scroll view to the top.
         Canvas.ForceUpdateCanvases();
 
         if(employeeScrollRect != null)

@@ -29,3 +29,15 @@ namespace Environment.Tasks {
         }
     }
 }
+
+
+
+//serilized field private textasset jsonefile = null
+//public class employee
+//{
+//public string name;
+//public int employeeId;
+//public bool hasEngineRoomClearance;
+//public string lastEntranceInEngineRoom;
+//public string lastExitFromEngineRoom;
+// emploe[] employee = jsonutiliyu.fromjson<employee>(jsonefile.text). employees;
