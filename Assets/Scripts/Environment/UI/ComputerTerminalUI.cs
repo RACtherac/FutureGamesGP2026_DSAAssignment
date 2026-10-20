@@ -7,6 +7,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using Environment.Diagnostic;
 
 public class ComputerTerminalUI : MonoBehaviour {
     [Header("Terminal Panel")]
@@ -239,6 +240,8 @@ public class ComputerTerminalUI : MonoBehaviour {
         string query = string.IsNullOrWhiteSpace(searchText)
             ? ""
             : searchText.Trim();
+        System.Diagnostics.Stopwatch stopwatch =
+    System.Diagnostics.Stopwatch.StartNew();
 
         for(int i = 0; i < allEmployees.Length; i++) {
             EmployeeData employee = allEmployees[i];
@@ -282,6 +285,13 @@ public class ComputerTerminalUI : MonoBehaviour {
             output.AppendLine("========================================");
             output.AppendLine();
         }
+
+        stopwatch.Stop();
+
+        Debug.Log(
+            $"Employee search took {stopwatch.Elapsed.TotalMilliseconds:F4} ms " +
+            $"and found {displayedCount} records."
+        );
 
         employeeDataText.text = output.ToString();
 
