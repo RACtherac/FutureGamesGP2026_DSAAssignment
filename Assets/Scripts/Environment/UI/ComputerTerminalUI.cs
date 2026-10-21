@@ -7,7 +7,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
-using Environment.Diagnostic;
+using Utils;
 
 public class ComputerTerminalUI : MonoBehaviour {
     [Header("Terminal Panel")]
@@ -26,6 +26,7 @@ public class ComputerTerminalUI : MonoBehaviour {
     [SerializeField] private TMP_Text employeeCountText;
     [SerializeField] private TMP_Text employeeDataText;
     [SerializeField] private TMP_InputField searchInput;
+    [SerializeField] private TMP_Dropdown sortDropdown;
     [SerializeField] private ScrollRect employeeScrollRect;
 
     [Header("Footer")]
@@ -42,12 +43,18 @@ public class ComputerTerminalUI : MonoBehaviour {
         if(searchInput != null)
             searchInput.onValueChanged.AddListener(SearchEmployees);
 
+        if(sortDropdown != null)
+            sortDropdown.onValueChanged.AddListener(OnSortChanged);
+
         CloseImmediately();
     }
 
     private void OnDestroy() {
         if(searchInput != null)
             searchInput.onValueChanged.RemoveListener(SearchEmployees);
+
+        if(sortDropdown != null)
+            sortDropdown.onValueChanged.RemoveListener(OnSortChanged);
     }
 
     private void Update() {
@@ -76,7 +83,7 @@ public class ComputerTerminalUI : MonoBehaviour {
             terminalPanel.SetActive(true);
 
         if(headerText != null)
-            headerText.text = "YPSILON 13 // SURVEILLACE TERMINAL";
+            headerText.text = "YPSILON 13 // SURVEILLANCE TERMINAL";
 
         if(statusText != null) {
             statusText.gameObject.SetActive(true);
@@ -97,6 +104,9 @@ public class ComputerTerminalUI : MonoBehaviour {
 
         if(searchInput != null)
             searchInput.SetTextWithoutNotify("");
+
+        if(sortDropdown != null)
+            sortDropdown.SetValueWithoutNotify(0);
 
         if(footerText != null)
             footerText.text = "INITIALIZING SYSTEM...";
@@ -207,14 +217,22 @@ public class ComputerTerminalUI : MonoBehaviour {
 
             if(employees == null) {
                 ShowError("ERROR: EMPLOYEE ARRAY NOT RETURNED");
+
                 Debug.LogWarning(
                     "The task did not return an EmployeeData array. " +
-                    "Check the final task in your pipeline."
+                    "Check the final task in your task pipeline."
                 );
+
                 return false;
             }
 
             allEmployees = employees;
+
+            EmployeeSortOption sortOption = sortDropdown != null
+                ? (EmployeeSortOption)sortDropdown.value
+                : EmployeeSortOption.Name;
+
+            SortingUtils.SortEmployees(allEmployees, sortOption);
 
             Debug.Log(
                 "Terminal loaded " + allEmployees.Length +
@@ -230,6 +248,44 @@ public class ComputerTerminalUI : MonoBehaviour {
         }
     }
 
+    private void OnSortChanged(int selectedIndex) {
+        if(allEmployees == null || allEmployees.Length == 0) {
+            Debug.LogWarning("Sort failed: No employees loaded.");
+            return;
+        }
+
+        if(selectedIndex < 0 ||
+            selectedIndex > (int)EmployeeSortOption.LastEntranceInEngineRoom) {
+            Debug.LogWarning("Sort failed: Invalid dropdown option.");
+            return;
+        }
+
+        EmployeeSortOption sortOption =
+            (EmployeeSortOption)selectedIndex;
+
+        Debug.Log("Sorting employees by: " + sortOption);
+
+        SortingUtils.SortEmployees(allEmployees, sortOption);
+
+        // Log the first three records so you can verify the new order.
+        for(int i = 0; i < Mathf.Min(3, allEmployees.Length); i++) {
+            EmployeeData employee = allEmployees[i];
+
+            if(employee != null) {
+                Debug.Log(
+                    "Sorted record " + i +
+                    ": " + employee.name +
+                    " | ID: " + employee.employeeId +
+                    " | Entry: " + employee.lastEntranceInEngineRoom
+                );
+            }
+        }
+
+        SearchEmployees(
+            searchInput != null ? searchInput.text : ""
+        );
+    }
+
     private void SearchEmployees(string searchText) {
         if(employeeDataText == null)
             return;
@@ -240,8 +296,6 @@ public class ComputerTerminalUI : MonoBehaviour {
         string query = string.IsNullOrWhiteSpace(searchText)
             ? ""
             : searchText.Trim();
-        System.Diagnostics.Stopwatch stopwatch =
-    System.Diagnostics.Stopwatch.StartNew();
 
         for(int i = 0; i < allEmployees.Length; i++) {
             EmployeeData employee = allEmployees[i];
@@ -250,14 +304,16 @@ public class ComputerTerminalUI : MonoBehaviour {
                 continue;
 
             bool matches =
-    string.IsNullOrWhiteSpace(query) ||
-    (employee.name != null &&
-     employee.name.IndexOf(
-         query, StringComparison.OrdinalIgnoreCase
-     ) >= 0) ||
-    employee.employeeId.ToString().IndexOf(
-        query, StringComparison.OrdinalIgnoreCase
-    ) >= 0;
+                string.IsNullOrWhiteSpace(query) ||
+                (!string.IsNullOrEmpty(employee.name) &&
+                 employee.name.IndexOf(
+                     query,
+                     StringComparison.OrdinalIgnoreCase
+                 ) >= 0) ||
+                employee.employeeId.ToString().IndexOf(
+                    query,
+                    StringComparison.OrdinalIgnoreCase
+                ) >= 0;
 
             if(!matches)
                 continue;
@@ -268,42 +324,45 @@ public class ComputerTerminalUI : MonoBehaviour {
             output.AppendLine("RECORD: " + displayedCount.ToString("D4"));
             output.AppendLine("EMPLOYEE ID: " + employee.employeeId);
             output.AppendLine("NAME: " + employee.name);
+
             output.AppendLine(
                 "ENGINE ROOM CLEARANCE: " +
                 (employee.hasEngineRoomClearance
                     ? "AUTHORIZED"
                     : "DENIED")
             );
+
             output.AppendLine(
                 "LAST ENGINE ROOM ENTRY: " +
                 employee.lastEntranceInEngineRoom
             );
+
             output.AppendLine(
                 "LAST ENGINE ROOM EXIT: " +
                 employee.lastExitFromEngineRoom
             );
+
             output.AppendLine("========================================");
             output.AppendLine();
         }
 
-        stopwatch.Stop();
-
-        Debug.Log(
-            $"Employee search took {stopwatch.Elapsed.TotalMilliseconds:F4} ms " +
-            $"and found {displayedCount} records."
-        );
-
         employeeDataText.text = output.ToString();
 
-        if(employeeCountText != null) {
-            employeeCountText.text =
-                "RECORDS FOUND: " + displayedCount;
-        }
+        if(employeeCountText != null)
+            employeeCountText.text = "RECORDS FOUND: " + displayedCount;
 
+        // Refresh the layout after changing the displayed text.
         Canvas.ForceUpdateCanvases();
 
-        if(employeeScrollRect != null)
+        LayoutRebuilder.ForceRebuildLayoutImmediate(
+            employeeDataText.rectTransform
+        );
+
+        if(employeeScrollRect != null) {
+            employeeScrollRect.StopMovement();
             employeeScrollRect.verticalNormalizedPosition = 1f;
+            employeeScrollRect.velocity = Vector2.zero;
+        }
     }
 
     private void ShowError(string message) {
@@ -314,5 +373,7 @@ public class ComputerTerminalUI : MonoBehaviour {
 
         if(employeeCountText != null)
             employeeCountText.text = "DATABASE ERROR";
+
+        Debug.LogError(message);
     }
 }

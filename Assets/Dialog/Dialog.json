@@ -1,0 +1,106 @@
+{
+  "startNodeId": "welcome",
+  "nodes": [
+    {
+      "id": "welcome",
+      "speaker": "YPSILON STATION AI",
+      "text": "Investigator detected. One fatality has been reported in the mining sector. I can provide access to available station records. What do you need?",
+      "choices": [
+        {
+          "text": "Review engine room access logs",
+          "nextNodeId": "access_logs",
+          "actionId": ""
+        },
+        {
+          "text": "Tell me about the victim",
+          "nextNodeId": "victim",
+          "actionId": ""
+        },
+        {
+          "text": "I need a hint",
+          "nextNodeId": "hint",
+          "actionId": ""
+        },
+        {
+          "text": "Disconnect",
+          "nextNodeId": "goodbye",
+          "actionId": ""
+        }
+      ]
+    },
+    {
+      "id": "access_logs",
+      "speaker": "YPSILON STATION AI",
+      "text": "The engine room is a restricted area. Personnel records contain the latest recorded entry and exit times. Compare those records with the estimated time of death.",
+      "choices": [
+        {
+          "text": "Who had engine room clearance?",
+          "nextNodeId": "clearance",
+          "actionId": ""
+        },
+        {
+          "text": "Return to the main menu",
+          "nextNodeId": "welcome",
+          "actionId": ""
+        }
+      ]
+    },
+    {
+      "id": "clearance",
+      "speaker": "YPSILON STATION AI",
+      "text": "Clearance status is recorded in the personnel database. Clearance alone does not prove that an employee entered the room. Verify the timestamps before drawing a conclusion.",
+      "choices": [
+        {
+          "text": "Return to the main menu",
+          "nextNodeId": "welcome",
+          "actionId": ""
+        },
+        {
+          "text": "Disconnect",
+          "nextNodeId": "goodbye",
+          "actionId": ""
+        }
+      ]
+    },
+    {
+      "id": "victim",
+      "speaker": "YPSILON STATION AI",
+      "text": "The incident report is incomplete. I cannot reliably identify a motive from the currently available personnel records. You should establish the timeline first.",
+      "choices": [
+        {
+          "text": "Review engine room access logs",
+          "nextNodeId": "access_logs",
+          "actionId": ""
+        },
+        {
+          "text": "Return to the main menu",
+          "nextNodeId": "welcome",
+          "actionId": ""
+        }
+      ]
+    },
+    {
+      "id": "hint",
+      "speaker": "YPSILON STATION AI",
+      "text": "Investigative suggestion: sort personnel by their last recorded engine room entry. Check who was present near the relevant time, then compare entry and exit times. Do not assume that the last person recorded is automatically responsible.",
+      "choices": [
+        {
+          "text": "Review engine room access logs",
+          "nextNodeId": "access_logs",
+          "actionId": ""
+        },
+        {
+          "text": "Return to the main menu",
+          "nextNodeId": "welcome",
+          "actionId": ""
+        }
+      ]
+    },
+    {
+      "id": "goodbye",
+      "speaker": "YPSILON STATION AI",
+      "text": "Session terminated. Remember: recorded access is evidence, not proof of guilt.",
+      "choices": []
+    }
+  ]
+}
