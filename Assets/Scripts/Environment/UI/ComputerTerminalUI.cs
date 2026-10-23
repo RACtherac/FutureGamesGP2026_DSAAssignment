@@ -33,37 +33,48 @@ public class ComputerTerminalUI : MonoBehaviour {
     [Header("Footer")]
     [SerializeField] private TMP_Text footerText;
 
+    [Header("Terminal Logo")]
+    [SerializeField] private GameObject terminalLogo;
+
     private Task taskToExecute;
     private ComputerTerminal activeTerminal;
 
-    private EmployeeData[] allEmployees =
-        new EmployeeData[0];
+    private EmployeeData[] allEmployees = new EmployeeData[0];
 
     private Coroutine bootCoroutine;
+
     private EmployeeSortOption currentSort =
         EmployeeSortOption.NameAscending;
 
     private void Awake() {
+        // Start with the terminal closed.
         if(terminalPanel != null)
             terminalPanel.SetActive(false);
 
+        // The database must remain hidden during boot.
         if(employeeDatabasePanel != null)
             employeeDatabasePanel.SetActive(false);
+
+        // The logo is enabled when boot starts.
+        if(terminalLogo != null)
+            terminalLogo.SetActive(false);
+
+        if(loadingBarContainer != null)
+            loadingBarContainer.SetActive(true);
+
+        if(statusText != null)
+            statusText.gameObject.SetActive(true);
 
         SetupSortDropdown();
 
         if(searchInput != null) {
-            searchInput.onValueChanged.AddListener(
-                SearchEmployees
-            );
+            searchInput.onValueChanged.AddListener(SearchEmployees);
         }
     }
 
     private void Update() {
-        if(terminalPanel == null ||
-            !terminalPanel.activeSelf) {
+        if(terminalPanel == null || !terminalPanel.activeSelf)
             return;
-        }
 
         if(Keyboard.current != null &&
             Keyboard.current.escapeKey.wasPressedThisFrame) {
@@ -88,17 +99,27 @@ public class ComputerTerminalUI : MonoBehaviour {
         taskToExecute = task;
         activeTerminal = computerTerminal;
 
+        if(bootCoroutine != null) {
+            StopCoroutine(bootCoroutine);
+            bootCoroutine = null;
+        }
+
+        // Show the terminal.
         if(terminalPanel != null)
             terminalPanel.SetActive(true);
 
+        // Hide the database until boot finishes.
         if(employeeDatabasePanel != null)
             employeeDatabasePanel.SetActive(false);
 
+        // Show the boot interface.
         if(loadingBarContainer != null)
             loadingBarContainer.SetActive(true);
 
-        if(statusText != null)
+        if(statusText != null) {
             statusText.gameObject.SetActive(true);
+            statusText.text = "";
+        }
 
         if(headerText != null)
             headerText.text = "YPSILON 13 // SECURITY TERMINAL";
@@ -106,37 +127,37 @@ public class ComputerTerminalUI : MonoBehaviour {
         if(footerText != null)
             footerText.text = "INITIALIZING...";
 
+        // Reset the progress bar.
         if(progressBarFill != null) {
             Vector3 scale = progressBarFill.localScale;
             scale.x = 0f;
             progressBarFill.localScale = scale;
         }
 
-        if(bootCoroutine != null)
-            StopCoroutine(bootCoroutine);
+        // Show the logo during boot.
+        if(terminalLogo != null)
+            terminalLogo.SetActive(true);
 
+        // Start the boot sequence.
         bootCoroutine = StartCoroutine(BootSequence());
     }
-
 
     private IEnumerator BootSequence() {
         string[] bootLines =
         {
-        "BIOS CHECK ................. OK",
-        "MEMORY TEST ................ OK",
-        "PERSONNEL MODULE ........... OK",
-        "CONNECTING TO DATABASE .....",
-        "VERIFYING USER .............",
-        "ACCESS GRANTED"
-    };
+            "BIOS CHECK ................. OK",
+            "MEMORY TEST ................ OK",
+            "PERSONNEL MODULE ........... OK",
+            "CONNECTING TO DATABASE .....",
+            "VERIFYING USER .............",
+            "ACCESS GRANTED"
+        };
 
-        // Clear the previous boot messages.
         if(statusText != null)
             statusText.text = "";
 
         for(int i = 0; i < bootLines.Length; i++) {
             if(statusText != null) {
-                // Add each new message on a separate line.
                 if(i > 0)
                     statusText.text += "\n";
 
@@ -154,7 +175,6 @@ public class ComputerTerminalUI : MonoBehaviour {
 
         bootCoroutine = null;
     }
-
 
     private void SetProgress(float progress) {
         if(progressBarFill == null)
@@ -174,7 +194,7 @@ public class ComputerTerminalUI : MonoBehaviour {
             return;
         }
 
-        // Execute the task here, exactly once per terminal opening.
+        // Execute the task once after boot completes.
         object result = taskToExecute.Execute();
 
         allEmployees = result as EmployeeData[];
@@ -189,12 +209,18 @@ public class ComputerTerminalUI : MonoBehaviour {
             allEmployees = new EmployeeData[0];
         }
 
+        // Hide the boot messages.
         if(statusText != null)
             statusText.gameObject.SetActive(false);
 
         if(loadingBarContainer != null)
             loadingBarContainer.SetActive(false);
 
+        // IMPORTANT: Hide the logo before showing the database.
+        if(terminalLogo != null)
+            terminalLogo.SetActive(false);
+
+        // Show the employee database.
         if(employeeDatabasePanel != null)
             employeeDatabasePanel.SetActive(true);
 
@@ -233,6 +259,7 @@ public class ComputerTerminalUI : MonoBehaviour {
 
     private void OnSortChanged(int selectedIndex) {
         currentSort = GetSortOption();
+
         SearchEmployees(
             searchInput != null ? searchInput.text : ""
         );
@@ -278,15 +305,12 @@ public class ComputerTerminalUI : MonoBehaviour {
             if(employee == null)
                 continue;
 
-            string employeeName =
-                employee.name ?? "";
-
-            string employeeID =
-                employee.employeeId.ToString();
+            string employeeName = employee.name ?? "";
+            string employeeID = employee.employeeId.ToString();
 
             if(query == "" ||
                 employeeName.ToLowerInvariant().Contains(query) ||
-                employeeID.ToLowerInvariant().Contains(query)) {
+                employeeID.Contains(query)) {
                 filteredEmployees.Add(employee);
             }
         }
@@ -351,6 +375,16 @@ public class ComputerTerminalUI : MonoBehaviour {
 
         if(employeeDatabasePanel != null)
             employeeDatabasePanel.SetActive(false);
+
+        // Ensure the logo is hidden when the terminal closes.
+        if(terminalLogo != null)
+            terminalLogo.SetActive(false);
+
+        if(loadingBarContainer != null)
+            loadingBarContainer.SetActive(false);
+
+        if(statusText != null)
+            statusText.gameObject.SetActive(false);
 
         taskToExecute = null;
         activeTerminal = null;

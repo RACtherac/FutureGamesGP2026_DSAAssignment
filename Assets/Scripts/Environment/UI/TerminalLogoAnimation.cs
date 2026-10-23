@@ -16,7 +16,11 @@ public class TerminalLogoAnimation : MonoBehaviour {
     }
 
     private void Update() {
-        transform.Rotate(0f, 0f, rotationSpeed * Time.unscaledDeltaTime);
+        transform.Rotate(
+            0f,
+            0f,
+            rotationSpeed * Time.unscaledDeltaTime
+        );
 
         float pulse = 1f + Mathf.Sin(
             Time.unscaledTime * pulseSpeed
