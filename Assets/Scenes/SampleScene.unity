@@ -2308,7 +2308,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -7.5, y: -0.4999981}
+  m_AnchoredPosition: {x: -7.5, y: -0.5}
   m_SizeDelta: {x: -35, y: -13}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &458165945
@@ -2643,7 +2643,7 @@ RectTransform:
   m_AnchorMin: {x: 0.1, y: 0.08}
   m_AnchorMax: {x: 0.9, y: 0.4}
   m_AnchoredPosition: {x: 0, y: 283}
-  m_SizeDelta: {x: -1440, y: 0}
+  m_SizeDelta: {x: -1440, y: -347.84}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &579866925
 MonoBehaviour:
@@ -6012,6 +6012,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 2138510766}
   - {fileID: 1065846276}
   - {fileID: 1312208959}
   - {fileID: 1149130546}
@@ -7440,8 +7441,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -767, y: 226}
-  m_SizeDelta: {x: 194.8, y: 55.7}
+  m_AnchoredPosition: {x: -767, y: 170}
+  m_SizeDelta: {x: 200, y: 100.5}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1578432419
 MonoBehaviour:
@@ -7501,6 +7502,15 @@ MonoBehaviour:
       m_Image: {fileID: 0}
       m_Color: {r: 1, g: 1, b: 1, a: 1}
     - m_Text: Last Entrance (Oldest First)
+      m_Image: {fileID: 0}
+      m_Color: {r: 1, g: 1, b: 1, a: 1}
+    - m_Text: Name (Z-A)
+      m_Image: {fileID: 0}
+      m_Color: {r: 1, g: 1, b: 1, a: 1}
+    - m_Text: Employee ID (High-Low)
+      m_Image: {fileID: 0}
+      m_Color: {r: 1, g: 1, b: 1, a: 1}
+    - m_Text: Last Entrance (New First)
       m_Image: {fileID: 0}
       m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_OnValueChanged:
@@ -8000,7 +8010,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1636060211
 RectTransform:
   m_ObjectHideFlags: 0
@@ -9961,15 +9971,15 @@ MonoBehaviour:
   headerText: {fileID: 1621114663}
   statusText: {fileID: 438648175}
   loadingBarContainer: {fileID: 66103664}
-  progressBarFill: {fileID: 66103665}
+  progressBarFill: {fileID: 1605767048}
   lineDelay: 0.45
   loginDelay: 1
   employeeDatabasePanel: {fileID: 1307291901}
   employeeCountText: {fileID: 2138510767}
   employeeDataText: {fileID: 2033623441}
   searchInput: {fileID: 1149130549}
-  sortDropdown: {fileID: 1578432419}
   employeeScrollRect: {fileID: 1312208960}
+  sortDropdown: {fileID: 1578432419}
   footerText: {fileID: 1846834845}
 --- !u!1 &2007429046
 GameObject:
@@ -10004,7 +10014,6 @@ RectTransform:
   - {fileID: 1621114662}
   - {fileID: 438648174}
   - {fileID: 1846834847}
-  - {fileID: 2138510766}
   - {fileID: 2010428822}
   - {fileID: 66103665}
   - {fileID: 1307291902}
@@ -10517,16 +10526,16 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2138510765}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2007429047}
+  m_Father: {fileID: 1307291902}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -762, y: 400}
+  m_AnchoredPosition: {x: -762, y: -68}
   m_SizeDelta: {x: 475.4, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2138510767
@@ -10814,6 +10823,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b879689ecf99d5243820476d5ff8f5ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ComputerTerminal
+  testTask: {fileID: 0}
   terminalUI: {fileID: 1986686964}
   scriptsToDisable: []
 --- !u!1001 &8404672306686481740

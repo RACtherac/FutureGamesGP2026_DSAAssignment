@@ -1,7 +1,6 @@
 
-using System;
 using System.Collections;
-using System.Text;
+using System.Collections.Generic;
 using Environment.Tasks;
 using TMPro;
 using UnityEngine;
@@ -26,40 +25,45 @@ public class ComputerTerminalUI : MonoBehaviour {
     [SerializeField] private TMP_Text employeeCountText;
     [SerializeField] private TMP_Text employeeDataText;
     [SerializeField] private TMP_InputField searchInput;
-    [SerializeField] private TMP_Dropdown sortDropdown;
     [SerializeField] private ScrollRect employeeScrollRect;
+
+    [Header("Sorting")]
+    [SerializeField] private TMP_Dropdown sortDropdown;
 
     [Header("Footer")]
     [SerializeField] private TMP_Text footerText;
 
     private Task taskToExecute;
     private ComputerTerminal activeTerminal;
-    private Coroutine bootCoroutine;
-    private bool terminalOpen;
 
-    private EmployeeData[] allEmployees = Array.Empty<EmployeeData>();
+    private EmployeeData[] allEmployees =
+        new EmployeeData[0];
+
+    private Coroutine bootCoroutine;
+    private EmployeeSortOption currentSort =
+        EmployeeSortOption.NameAscending;
 
     private void Awake() {
-        if(searchInput != null)
-            searchInput.onValueChanged.AddListener(SearchEmployees);
+        if(terminalPanel != null)
+            terminalPanel.SetActive(false);
 
-        if(sortDropdown != null)
-            sortDropdown.onValueChanged.AddListener(OnSortChanged);
+        if(employeeDatabasePanel != null)
+            employeeDatabasePanel.SetActive(false);
 
-        CloseImmediately();
-    }
+        SetupSortDropdown();
 
-    private void OnDestroy() {
-        if(searchInput != null)
-            searchInput.onValueChanged.RemoveListener(SearchEmployees);
-
-        if(sortDropdown != null)
-            sortDropdown.onValueChanged.RemoveListener(OnSortChanged);
+        if(searchInput != null) {
+            searchInput.onValueChanged.AddListener(
+                SearchEmployees
+            );
+        }
     }
 
     private void Update() {
-        if(!terminalOpen)
+        if(terminalPanel == null ||
+            !terminalPanel.activeSelf) {
             return;
+        }
 
         if(Keyboard.current != null &&
             Keyboard.current.escapeKey.wasPressedThisFrame) {
@@ -70,48 +74,43 @@ public class ComputerTerminalUI : MonoBehaviour {
         }
     }
 
-    public void OpenTerminal(Task task, ComputerTerminal computerTerminal) {
-        if(terminalOpen || task == null)
+    public void OpenTerminal(
+        Task task,
+        ComputerTerminal computerTerminal) {
+        if(task == null) {
+            Debug.LogError(
+                "ComputerTerminalUI: No task received.",
+                this
+            );
             return;
+        }
 
         taskToExecute = task;
         activeTerminal = computerTerminal;
-        terminalOpen = true;
-        allEmployees = Array.Empty<EmployeeData>();
 
         if(terminalPanel != null)
             terminalPanel.SetActive(true);
 
-        if(headerText != null)
-            headerText.text = "YPSILON 13 // SURVEILLANCE TERMINAL";
-
-        if(statusText != null) {
-            statusText.gameObject.SetActive(true);
-            statusText.text = "";
-        }
+        if(employeeDatabasePanel != null)
+            employeeDatabasePanel.SetActive(false);
 
         if(loadingBarContainer != null)
             loadingBarContainer.SetActive(true);
 
-        if(employeeDatabasePanel != null)
-            employeeDatabasePanel.SetActive(false);
+        if(statusText != null)
+            statusText.gameObject.SetActive(true);
 
-        if(employeeCountText != null)
-            employeeCountText.text = "";
-
-        if(employeeDataText != null)
-            employeeDataText.text = "";
-
-        if(searchInput != null)
-            searchInput.SetTextWithoutNotify("");
-
-        if(sortDropdown != null)
-            sortDropdown.SetValueWithoutNotify(0);
+        if(headerText != null)
+            headerText.text = "YPSILON 13 // SECURITY TERMINAL";
 
         if(footerText != null)
-            footerText.text = "INITIALIZING SYSTEM...";
+            footerText.text = "INITIALIZING...";
 
-        SetProgress(0f);
+        if(progressBarFill != null) {
+            Vector3 scale = progressBarFill.localScale;
+            scale.x = 0f;
+            progressBarFill.localScale = scale;
+        }
 
         if(bootCoroutine != null)
             StopCoroutine(bootCoroutine);
@@ -119,82 +118,43 @@ public class ComputerTerminalUI : MonoBehaviour {
         bootCoroutine = StartCoroutine(BootSequence());
     }
 
-    public void CloseImmediately() {
-        if(bootCoroutine != null) {
-            StopCoroutine(bootCoroutine);
-            bootCoroutine = null;
-        }
-
-        terminalOpen = false;
-        taskToExecute = null;
-        activeTerminal = null;
-        allEmployees = Array.Empty<EmployeeData>();
-
-        if(terminalPanel != null)
-            terminalPanel.SetActive(false);
-    }
 
     private IEnumerator BootSequence() {
-        yield return TypeLine("BIOS CHECK ................. OK");
-        SetProgress(0.15f);
+        string[] bootLines =
+        {
+        "BIOS CHECK ................. OK",
+        "MEMORY TEST ................ OK",
+        "PERSONNEL MODULE ........... OK",
+        "CONNECTING TO DATABASE .....",
+        "VERIFYING USER .............",
+        "ACCESS GRANTED"
+    };
 
-        yield return TypeLine("MEMORY TEST ................ OK");
-        SetProgress(0.30f);
+        // Clear the previous boot messages.
+        if(statusText != null)
+            statusText.text = "";
 
-        yield return TypeLine("PERSONNEL MODULE ........... LOADING");
-        SetProgress(0.45f);
+        for(int i = 0; i < bootLines.Length; i++) {
+            if(statusText != null) {
+                // Add each new message on a separate line.
+                if(i > 0)
+                    statusText.text += "\n";
 
-        yield return new WaitForSecondsRealtime(lineDelay);
+                statusText.text += bootLines[i];
+            }
 
-        yield return TypeLine("CONNECTING TO DATABASE ..... OK");
-        SetProgress(0.65f);
+            SetProgress((float)(i + 1) / bootLines.Length);
 
-        yield return TypeLine("VERIFYING USER ............. ADMIN");
-        SetProgress(0.80f);
+            yield return new WaitForSecondsRealtime(lineDelay);
+        }
 
         yield return new WaitForSecondsRealtime(loginDelay);
 
-        yield return TypeLine("ACCESS GRANTED");
-        SetProgress(1f);
-
-        if(footerText != null)
-            footerText.text = "LOADING PERSONNEL RECORDS...";
-
-        yield return new WaitForSecondsRealtime(lineDelay);
-
-        bool loaded = LoadEmployeeData();
-
-        if(loaded) {
-            if(statusText != null)
-                statusText.gameObject.SetActive(false);
-
-            if(loadingBarContainer != null)
-                loadingBarContainer.SetActive(false);
-
-            if(employeeDatabasePanel != null)
-                employeeDatabasePanel.SetActive(true);
-
-            SearchEmployees(
-                searchInput != null ? searchInput.text : ""
-            );
-
-            if(footerText != null)
-                footerText.text = "PRESS ESC TO LOG OUT";
-        }
-        else {
-            if(footerText != null)
-                footerText.text = "DATABASE LOAD FAILED - PRESS ESC";
-        }
+        LoadEmployeeData();
 
         bootCoroutine = null;
     }
 
-    private IEnumerator TypeLine(string line) {
-        if(statusText != null)
-            statusText.text += line + "\n";
-
-        yield return new WaitForSecondsRealtime(lineDelay);
-    }
 
     private void SetProgress(float progress) {
         if(progressBarFill == null)
@@ -205,175 +165,203 @@ public class ComputerTerminalUI : MonoBehaviour {
         progressBarFill.localScale = scale;
     }
 
-    private bool LoadEmployeeData() {
+    private void LoadEmployeeData() {
         if(taskToExecute == null) {
-            ShowError("ERROR: NO TASK ASSIGNED");
-            return false;
+            Debug.LogError(
+                "ComputerTerminalUI: No task to execute.",
+                this
+            );
+            return;
         }
 
-        try {
-            object result = taskToExecute.Execute();
-            EmployeeData[] employees = result as EmployeeData[];
+        // Execute the task here, exactly once per terminal opening.
+        object result = taskToExecute.Execute();
 
-            if(employees == null) {
-                ShowError("ERROR: EMPLOYEE ARRAY NOT RETURNED");
+        allEmployees = result as EmployeeData[];
 
-                Debug.LogWarning(
-                    "The task did not return an EmployeeData array. " +
-                    "Check the final task in your task pipeline."
-                );
-
-                return false;
-            }
-
-            allEmployees = employees;
-
-            EmployeeSortOption sortOption = sortDropdown != null
-                ? (EmployeeSortOption)sortDropdown.value
-                : EmployeeSortOption.Name;
-
-            SortingUtils.SortEmployees(allEmployees, sortOption);
-
-            Debug.Log(
-                "Terminal loaded " + allEmployees.Length +
-                " employee records."
+        if(allEmployees == null) {
+            Debug.LogError(
+                "ComputerTerminalUI: The task did not return EmployeeData[]. " +
+                "Check the task's Execute() return value.",
+                this
             );
 
-            return true;
+            allEmployees = new EmployeeData[0];
         }
-        catch(Exception exception) {
-            ShowError("DATABASE ERROR");
-            Debug.LogException(exception);
-            return false;
-        }
+
+        if(statusText != null)
+            statusText.gameObject.SetActive(false);
+
+        if(loadingBarContainer != null)
+            loadingBarContainer.SetActive(false);
+
+        if(employeeDatabasePanel != null)
+            employeeDatabasePanel.SetActive(true);
+
+        if(footerText != null)
+            footerText.text = "PERSONNEL DATABASE // CONNECTED";
+
+        if(searchInput != null)
+            searchInput.SetTextWithoutNotify("");
+
+        currentSort = GetSortOption();
+
+        SearchEmployees("");
+    }
+
+    private void SetupSortDropdown() {
+        if(sortDropdown == null)
+            return;
+
+        sortDropdown.ClearOptions();
+
+        sortDropdown.AddOptions(new List<string>
+        {
+            "Name (A-Z)",
+            "Name (Z-A)",
+            "Employee ID (Low-High)",
+            "Employee ID (High-Low)",
+            "Last Entrance (Oldest-Newest)",
+            "Last Entrance (Newest-Oldest)"
+        });
+
+        sortDropdown.SetValueWithoutNotify(0);
+        sortDropdown.RefreshShownValue();
+
+        sortDropdown.onValueChanged.AddListener(OnSortChanged);
     }
 
     private void OnSortChanged(int selectedIndex) {
-        if(allEmployees == null || allEmployees.Length == 0) {
-            Debug.LogWarning("Sort failed: No employees loaded.");
-            return;
-        }
-
-        if(selectedIndex < 0 ||
-            selectedIndex > (int)EmployeeSortOption.LastEntranceInEngineRoom) {
-            Debug.LogWarning("Sort failed: Invalid dropdown option.");
-            return;
-        }
-
-        EmployeeSortOption sortOption =
-            (EmployeeSortOption)selectedIndex;
-
-        Debug.Log("Sorting employees by: " + sortOption);
-
-        SortingUtils.SortEmployees(allEmployees, sortOption);
-
-        // Log the first three records so you can verify the new order.
-        for(int i = 0; i < Mathf.Min(3, allEmployees.Length); i++) {
-            EmployeeData employee = allEmployees[i];
-
-            if(employee != null) {
-                Debug.Log(
-                    "Sorted record " + i +
-                    ": " + employee.name +
-                    " | ID: " + employee.employeeId +
-                    " | Entry: " + employee.lastEntranceInEngineRoom
-                );
-            }
-        }
-
+        currentSort = GetSortOption();
         SearchEmployees(
             searchInput != null ? searchInput.text : ""
         );
+    }
+
+    private EmployeeSortOption GetSortOption() {
+        if(sortDropdown == null)
+            return EmployeeSortOption.NameAscending;
+
+        switch(sortDropdown.value) {
+            case 1:
+                return EmployeeSortOption.NameDescending;
+
+            case 2:
+                return EmployeeSortOption.EmployeeIDAscending;
+
+            case 3:
+                return EmployeeSortOption.EmployeeIDDescending;
+
+            case 4:
+                return EmployeeSortOption.LastEntranceAscending;
+
+            case 5:
+                return EmployeeSortOption.LastEntranceDescending;
+
+            default:
+                return EmployeeSortOption.NameAscending;
+        }
     }
 
     private void SearchEmployees(string searchText) {
         if(employeeDataText == null)
             return;
 
-        StringBuilder output = new StringBuilder();
-        int displayedCount = 0;
+        List<EmployeeData> filteredEmployees =
+            new List<EmployeeData>();
 
         string query = string.IsNullOrWhiteSpace(searchText)
             ? ""
-            : searchText.Trim();
+            : searchText.Trim().ToLowerInvariant();
 
-        for(int i = 0; i < allEmployees.Length; i++) {
-            EmployeeData employee = allEmployees[i];
-
+        foreach(EmployeeData employee in allEmployees) {
             if(employee == null)
                 continue;
 
-            bool matches =
-                string.IsNullOrWhiteSpace(query) ||
-                (!string.IsNullOrEmpty(employee.name) &&
-                 employee.name.IndexOf(
-                     query,
-                     StringComparison.OrdinalIgnoreCase
-                 ) >= 0) ||
-                employee.employeeId.ToString().IndexOf(
-                    query,
-                    StringComparison.OrdinalIgnoreCase
-                ) >= 0;
+            string employeeName =
+                employee.name ?? "";
 
-            if(!matches)
-                continue;
+            string employeeID =
+                employee.employeeId.ToString();
 
-            displayedCount++;
+            if(query == "" ||
+                employeeName.ToLowerInvariant().Contains(query) ||
+                employeeID.ToLowerInvariant().Contains(query)) {
+                filteredEmployees.Add(employee);
+            }
+        }
 
-            output.AppendLine("========================================");
-            output.AppendLine("RECORD: " + displayedCount.ToString("D4"));
-            output.AppendLine("EMPLOYEE ID: " + employee.employeeId);
-            output.AppendLine("NAME: " + employee.name);
+        EmployeeData[] sortedEmployees =
+            filteredEmployees.ToArray();
 
+        SortingUtils.SortEmployees(
+            sortedEmployees,
+            currentSort
+        );
+
+        DisplayEmployees(sortedEmployees);
+    }
+
+    private void DisplayEmployees(EmployeeData[] employees) {
+        System.Text.StringBuilder output =
+            new System.Text.StringBuilder();
+
+        for(int i = 0; i < employees.Length; i++) {
+            EmployeeData employee = employees[i];
+
+            output.AppendLine("----------------------------------------");
+            output.AppendLine($"NAME: {employee.name}");
+            output.AppendLine($"EMPLOYEE ID: {employee.employeeId}");
             output.AppendLine(
-                "ENGINE ROOM CLEARANCE: " +
-                (employee.hasEngineRoomClearance
-                    ? "AUTHORIZED"
-                    : "DENIED")
+                $"ENGINE ROOM CLEARANCE: {employee.hasEngineRoomClearance}"
             );
-
             output.AppendLine(
-                "LAST ENGINE ROOM ENTRY: " +
-                employee.lastEntranceInEngineRoom
+                $"LAST ENTRANCE: {employee.lastEntranceInEngineRoom}"
             );
-
             output.AppendLine(
-                "LAST ENGINE ROOM EXIT: " +
-                employee.lastExitFromEngineRoom
+                $"LAST EXIT: {employee.lastExitFromEngineRoom}"
             );
-
-            output.AppendLine("========================================");
             output.AppendLine();
         }
 
+        if(employees.Length == 0)
+            output.AppendLine("NO MATCHING EMPLOYEES FOUND.");
+
         employeeDataText.text = output.ToString();
 
-        if(employeeCountText != null)
-            employeeCountText.text = "RECORDS FOUND: " + displayedCount;
-
-        // Refresh the layout after changing the displayed text.
-        Canvas.ForceUpdateCanvases();
-
-        LayoutRebuilder.ForceRebuildLayoutImmediate(
-            employeeDataText.rectTransform
-        );
+        if(employeeCountText != null) {
+            employeeCountText.text =
+                $"RECORDS FOUND: {employees.Length}";
+        }
 
         if(employeeScrollRect != null) {
-            employeeScrollRect.StopMovement();
+            Canvas.ForceUpdateCanvases();
             employeeScrollRect.verticalNormalizedPosition = 1f;
-            employeeScrollRect.velocity = Vector2.zero;
         }
     }
 
-    private void ShowError(string message) {
-        if(statusText != null) {
-            statusText.gameObject.SetActive(true);
-            statusText.text += "\n" + message;
+    public void CloseImmediately() {
+        if(bootCoroutine != null) {
+            StopCoroutine(bootCoroutine);
+            bootCoroutine = null;
         }
 
-        if(employeeCountText != null)
-            employeeCountText.text = "DATABASE ERROR";
+        if(terminalPanel != null)
+            terminalPanel.SetActive(false);
 
-        Debug.LogError(message);
+        if(employeeDatabasePanel != null)
+            employeeDatabasePanel.SetActive(false);
+
+        taskToExecute = null;
+        activeTerminal = null;
+        allEmployees = new EmployeeData[0];
+    }
+
+    private void OnDestroy() {
+        if(searchInput != null)
+            searchInput.onValueChanged.RemoveListener(SearchEmployees);
+
+        if(sortDropdown != null)
+            sortDropdown.onValueChanged.RemoveListener(OnSortChanged);
     }
 }
