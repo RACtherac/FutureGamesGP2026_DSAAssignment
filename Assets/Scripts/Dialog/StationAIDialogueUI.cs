@@ -22,9 +22,7 @@ public class StationAIDialogueUI : MonoBehaviour {
     [SerializeField] private Button choiceButtonPrefab;
 
     [Header("Dialogue Data")]
-    [SerializeField]
-    private string jsonResourcePath =
-        "Dialogue/helper_dialogue";
+    [SerializeField] private Task dialogueLoadTask;
 
     [Header("Optional Task Actions")]
     [SerializeField] private StationDialogueTaskBinding[] taskBindings;
@@ -59,35 +57,79 @@ public class StationAIDialogueUI : MonoBehaviour {
         }
     }
 
-    private void LoadDialogue() {
-        TextAsset jsonFile = Resources.Load<TextAsset>(jsonResourcePath);
 
-        if(jsonFile == null) {
-            Debug.LogError(
-                "Station AI dialogue JSON not found at Resources/" +
-                jsonResourcePath + ".json"
-            );
+
+    private void LoadDialogue() {
+        Debug.Log("[Station AI] Loading dialogue...");
+
+        if(dialogueLoadTask == null) {
+            Debug.LogError("[Station AI] No dialogue task assigned.");
             return;
         }
 
-        try {
-            dialogueFile =
-                JsonUtility.FromJson<StationDialogueFile>(jsonFile.text);
+        Debug.Log(
+            "[Station AI] Task assigned: " +
+            dialogueLoadTask.name
+        );
 
-            if(dialogueFile == null || dialogueFile.nodes == null) {
-                Debug.LogError("Station AI dialogue JSON is invalid.");
+        try {
+            object result = dialogueLoadTask.Execute();
+
+            if(result == null) {
+                Debug.LogError(
+                    "[Station AI] Task returned NULL. " +
+                    "Check the JSON file path and ReadStationDialogueTask."
+                );
                 return;
             }
+
+            Debug.Log(
+                "[Station AI] Task returned type: " +
+                result.GetType().FullName
+            );
+
+            dialogueFile = result as StationDialogueFile;
+
+            if(dialogueFile == null) {
+                Debug.LogError(
+                    "[Station AI] Result is not a StationDialogueFile. " +
+                    "Check the return value in ReadStationDialogueTask."
+                );
+                return;
+            }
+
+            if(dialogueFile.nodes == null) {
+                Debug.LogError(
+                    "[Station AI] Dialogue nodes array is NULL."
+                );
+                return;
+            }
+
+            Debug.Log(
+                "[Station AI] Start node ID: '" +
+                dialogueFile.startNodeId + "'"
+            );
+
+            Debug.Log(
+                "[Station AI] Number of nodes: " +
+                dialogueFile.nodes.Length
+            );
 
             nodesById.Clear();
 
             foreach(StationDialogueNode node in dialogueFile.nodes) {
-                if(node == null || string.IsNullOrWhiteSpace(node.id))
+                if(node == null || string.IsNullOrWhiteSpace(node.id)) {
+                    Debug.LogWarning(
+                        "[Station AI] Found a node with an empty ID."
+                    );
                     continue;
+                }
+
+                Debug.Log("[Station AI] Found node ID: '" + node.id + "'");
 
                 if(nodesById.ContainsKey(node.id)) {
                     Debug.LogWarning(
-                        "Duplicate dialogue node ID: " + node.id
+                        "[Station AI] Duplicate node ID: " + node.id
                     );
                     continue;
                 }
@@ -97,25 +139,51 @@ public class StationAIDialogueUI : MonoBehaviour {
 
             if(!nodesById.ContainsKey(dialogueFile.startNodeId)) {
                 Debug.LogError(
-                    "The dialogue start node does not exist: " +
-                    dialogueFile.startNodeId
+                    "[Station AI] Start node '" +
+                    dialogueFile.startNodeId +
+                    "' does not match any node ID."
                 );
+                return;
             }
+
+            Debug.Log(
+                "[Station AI] Loaded " + nodesById.Count +
+                " nodes. Start node = '" + dialogueFile.startNodeId + "'."
+            );
+
+            Debug.Log(
+                "[Station AI] Start node found: " +
+                nodesById.ContainsKey(dialogueFile.startNodeId)
+            );
         }
         catch(Exception exception) {
-            Debug.LogError("Could not load Station AI dialogue JSON.");
+            Debug.LogError("[Station AI] Failed to load dialogue.");
             Debug.LogException(exception);
         }
     }
 
-    public void OpenDialogue() {
-        if(dialogueOpen)
-            return;
 
+
+
+    public void OpenDialogue() {
+        Debug.Log("[Station AI] Open button pressed.");
+
+        // Retry loading if the data was not ready in Awake().
         if(dialogueFile == null ||
             !nodesById.ContainsKey(dialogueFile.startNodeId)) {
+            Debug.LogWarning(
+                "[Station AI] Dialogue is not ready. Retrying load..."
+            );
+
+            LoadDialogue();
+        }
+
+        if(dialogueFile == null ||
+            string.IsNullOrWhiteSpace(dialogueFile.startNodeId) ||
+            !nodesById.ContainsKey(dialogueFile.startNodeId)) {
             Debug.LogError(
-                "Station AI cannot open because dialogue data is missing."
+                "[Station AI] Still unable to open dialogue. " +
+                "Check the ReadStationDialogueTask logs above this message."
             );
             return;
         }
@@ -124,10 +192,13 @@ public class StationAIDialogueUI : MonoBehaviour {
 
         if(dialoguePanel != null)
             dialoguePanel.SetActive(true);
+        else
+            Debug.LogError("[Station AI] Dialogue Panel is not assigned.");
 
         SetPlayerControls(false);
         ShowNode(dialogueFile.startNodeId);
     }
+
 
     public void CloseDialogue() {
         if(!dialogueOpen)
