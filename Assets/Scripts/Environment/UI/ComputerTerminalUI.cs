@@ -47,15 +47,12 @@ public class ComputerTerminalUI : MonoBehaviour {
         EmployeeSortOption.NameAscending;
 
     private void Awake() {
-        // Start with the terminal closed.
         if(terminalPanel != null)
             terminalPanel.SetActive(false);
 
-        // The database must remain hidden during boot.
         if(employeeDatabasePanel != null)
             employeeDatabasePanel.SetActive(false);
 
-        // The logo is enabled when boot starts.
         if(terminalLogo != null)
             terminalLogo.SetActive(false);
 
@@ -104,15 +101,12 @@ public class ComputerTerminalUI : MonoBehaviour {
             bootCoroutine = null;
         }
 
-        // Show the terminal.
         if(terminalPanel != null)
             terminalPanel.SetActive(true);
 
-        // Hide the database until boot finishes.
         if(employeeDatabasePanel != null)
             employeeDatabasePanel.SetActive(false);
 
-        // Show the boot interface.
         if(loadingBarContainer != null)
             loadingBarContainer.SetActive(true);
 
@@ -127,18 +121,15 @@ public class ComputerTerminalUI : MonoBehaviour {
         if(footerText != null)
             footerText.text = "INITIALIZING...";
 
-        // Reset the progress bar.
         if(progressBarFill != null) {
             Vector3 scale = progressBarFill.localScale;
             scale.x = 0f;
             progressBarFill.localScale = scale;
         }
 
-        // Show the logo during boot.
         if(terminalLogo != null)
             terminalLogo.SetActive(true);
 
-        // Start the boot sequence.
         bootCoroutine = StartCoroutine(BootSequence());
     }
 
@@ -194,7 +185,6 @@ public class ComputerTerminalUI : MonoBehaviour {
             return;
         }
 
-        // Execute the task once after boot completes.
         object result = taskToExecute.Execute();
 
         allEmployees = result as EmployeeData[];
@@ -209,18 +199,15 @@ public class ComputerTerminalUI : MonoBehaviour {
             allEmployees = new EmployeeData[0];
         }
 
-        // Hide the boot messages.
         if(statusText != null)
             statusText.gameObject.SetActive(false);
 
         if(loadingBarContainer != null)
             loadingBarContainer.SetActive(false);
 
-        // IMPORTANT: Hide the logo before showing the database.
         if(terminalLogo != null)
             terminalLogo.SetActive(false);
 
-        // Show the employee database.
         if(employeeDatabasePanel != null)
             employeeDatabasePanel.SetActive(true);
 
@@ -376,7 +363,6 @@ public class ComputerTerminalUI : MonoBehaviour {
         if(employeeDatabasePanel != null)
             employeeDatabasePanel.SetActive(false);
 
-        // Ensure the logo is hidden when the terminal closes.
         if(terminalLogo != null)
             terminalLogo.SetActive(false);
 

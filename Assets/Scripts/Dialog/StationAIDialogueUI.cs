@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections.Generic;
 using Environment.Tasks;
@@ -56,105 +55,25 @@ public class StationAIDialogueUI : MonoBehaviour {
             CloseDialogue();
         }
     }
-
-
-
     private void LoadDialogue() {
-        Debug.Log("[Station AI] Loading dialogue...");
-
-        if(dialogueLoadTask == null) {
-            Debug.LogError("[Station AI] No dialogue task assigned.");
-            return;
-        }
-
-        Debug.Log(
-            "[Station AI] Task assigned: " +
-            dialogueLoadTask.name
-        );
-
         try {
             object result = dialogueLoadTask.Execute();
-
-            if(result == null) {
-                Debug.LogError(
-                    "[Station AI] Task returned NULL. " +
-                    "Check the JSON file path and ReadStationDialogueTask."
-                );
-                return;
-            }
-
-            Debug.Log(
-                "[Station AI] Task returned type: " +
-                result.GetType().FullName
-            );
-
             dialogueFile = result as StationDialogueFile;
-
-            if(dialogueFile == null) {
-                Debug.LogError(
-                    "[Station AI] Result is not a StationDialogueFile. " +
-                    "Check the return value in ReadStationDialogueTask."
-                );
-                return;
-            }
-
-            if(dialogueFile.nodes == null) {
-                Debug.LogError(
-                    "[Station AI] Dialogue nodes array is NULL."
-                );
-                return;
-            }
-
-            Debug.Log(
-                "[Station AI] Start node ID: '" +
-                dialogueFile.startNodeId + "'"
-            );
-
-            Debug.Log(
-                "[Station AI] Number of nodes: " +
-                dialogueFile.nodes.Length
-            );
-
             nodesById.Clear();
 
             foreach(StationDialogueNode node in dialogueFile.nodes) {
                 if(node == null || string.IsNullOrWhiteSpace(node.id)) {
-                    Debug.LogWarning(
-                        "[Station AI] Found a node with an empty ID."
-                    );
+                    
                     continue;
                 }
 
-                Debug.Log("[Station AI] Found node ID: '" + node.id + "'");
-
                 if(nodesById.ContainsKey(node.id)) {
-                    Debug.LogWarning(
-                        "[Station AI] Duplicate node ID: " + node.id
-                    );
+                    
                     continue;
                 }
 
                 nodesById.Add(node.id, node);
             }
-
-            if(!nodesById.ContainsKey(dialogueFile.startNodeId)) {
-                Debug.LogError(
-                    "[Station AI] Start node '" +
-                    dialogueFile.startNodeId +
-                    "' does not match any node ID."
-                );
-                return;
-            }
-
-            Debug.Log(
-                "[Station AI] Loaded " + nodesById.Count +
-                " nodes. Start node = '" + dialogueFile.startNodeId + "'."
-            );
-
-            Debug.Log(
-                "[Station AI] Start node found: " +
-                nodesById.ContainsKey(dialogueFile.startNodeId)
-            );
         }
         catch(Exception exception) {
             Debug.LogError("[Station AI] Failed to load dialogue.");
@@ -162,30 +81,13 @@ public class StationAIDialogueUI : MonoBehaviour {
         }
     }
 
-
-
-
     public void OpenDialogue() {
-        Debug.Log("[Station AI] Open button pressed.");
 
-        // Retry loading if the data was not ready in Awake().
         if(dialogueFile == null ||
             !nodesById.ContainsKey(dialogueFile.startNodeId)) {
-            Debug.LogWarning(
-                "[Station AI] Dialogue is not ready. Retrying load..."
-            );
+            
 
             LoadDialogue();
-        }
-
-        if(dialogueFile == null ||
-            string.IsNullOrWhiteSpace(dialogueFile.startNodeId) ||
-            !nodesById.ContainsKey(dialogueFile.startNodeId)) {
-            Debug.LogError(
-                "[Station AI] Still unable to open dialogue. " +
-                "Check the ReadStationDialogueTask logs above this message."
-            );
-            return;
         }
 
         dialogueOpen = true;
@@ -308,12 +210,6 @@ public class StationAIDialogueUI : MonoBehaviour {
 
             try {
                 object result = binding.task.Execute();
-
-                Debug.Log(
-                    "Station AI action '" + actionId +
-                    "' executed. Result: " +
-                    (result != null ? result.ToString() : "null")
-                );
             }
             catch(Exception exception) {
                 Debug.LogError(
@@ -324,10 +220,6 @@ public class StationAIDialogueUI : MonoBehaviour {
 
             return;
         }
-
-        Debug.LogWarning(
-            "No Task asset is assigned for action ID: " + actionId
-        );
     }
 
     private void SetPlayerControls(bool enableControls) {

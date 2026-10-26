@@ -15,7 +15,6 @@ namespace Environment.Tasks {
                 return null;
             }
 
-            // Bubble Sort: oldest entrance first.
             for(int i = 0; i < workers.Length - 1; i++) {
                 for(int j = 0; j < workers.Length - 1 - i; j++) {
                     DateTime firstDate;

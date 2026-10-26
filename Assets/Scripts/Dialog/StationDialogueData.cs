@@ -1,4 +1,3 @@
-
 using System;
 
 [Serializable]
@@ -19,7 +18,5 @@ public class StationDialogueNode {
 public class StationDialogueChoice {
     public string text;
     public string nextNodeId;
-
-    // Optional ID for triggering a Unity Task.
     public string actionId;
 }
