@@ -1,7 +1,5 @@
-
 using System;
 using Environment.Tasks;
-using UnityEditor;
 
 namespace Utils {
     public enum EmployeeSortOption {
@@ -14,28 +12,63 @@ namespace Utils {
     }
 
     public static class SortingUtils {
-        public static void SelectionSort(int[] arrayToSort) {
-            if(arrayToSort == null)
+
+        public static void MergeSort(int[] arrayToSort) {
+            if(arrayToSort == null || arrayToSort.Length < 2)
                 return;
 
-            for(int i = 0; i < arrayToSort.Length - 1; i++) {
-                int currentSmallestIndex = i;
+            int[] temp = new int[arrayToSort.Length];
 
-                for(int j = i + 1; j < arrayToSort.Length; j++) {
-                    if(arrayToSort[j] < arrayToSort[currentSmallestIndex])
-                        currentSmallestIndex = j;
-                }
+            MergeSort(arrayToSort, temp, 0, arrayToSort.Length - 1);
+        }
 
-                int temp = arrayToSort[i];
-                arrayToSort[i] = arrayToSort[currentSmallestIndex];
-                arrayToSort[currentSmallestIndex] = temp;
+        private static void MergeSort(
+            int[] array,
+            int[] temp,
+            int left,
+            int right) {
+            if(left >= right)
+                return;
+
+            int middle = left + (right - left) / 2;
+
+            MergeSort(array, temp, left, middle);
+            MergeSort(array, temp, middle + 1, right);
+
+            Merge(array, temp, left, middle, right);
+        }
+
+        private static void Merge(
+            int[] array,
+            int[] temp,
+            int left,
+            int middle,
+            int right) {
+            int i = left;
+            int j = middle + 1;
+            int k = left;
+
+            while(i <= middle && j <= right) {
+                if(array[i] <= array[j])
+                    temp[k++] = array[i++];
+                else
+                    temp[k++] = array[j++];
             }
+
+            while(i <= middle)
+                temp[k++] = array[i++];
+
+            while(j <= right)
+                temp[k++] = array[j++];
+
+            for(int index = left; index <= right; index++)
+                array[index] = temp[index];
         }
 
         public static void SortEmployees(
             EmployeeData[] employees,
             EmployeeSortOption sortOption) {
-            if(employees == null)
+            if(employees == null || employees.Length < 2)
                 return;
 
             bool descending =
@@ -49,64 +82,122 @@ namespace Utils {
                 case EmployeeSortOption.NameDescending:
                     baseOption = EmployeeSortOption.NameAscending;
                     break;
+
                 case EmployeeSortOption.EmployeeIDDescending:
                     baseOption = EmployeeSortOption.EmployeeIDAscending;
                     break;
+
                 case EmployeeSortOption.LastEntranceDescending:
                     baseOption = EmployeeSortOption.LastEntranceAscending;
                     break;
             }
 
-            for(int i = 0; i < employees.Length - 1; i++) {
-                int selectedIndex = i;
+            EmployeeData[] temp = new EmployeeData[employees.Length];
 
-                for(int j = i + 1; j < employees.Length; j++) {
-                    if(CompareEmployees(
-                        employees[j], employees[selectedIndex], baseOption) < 0) {
-                        selectedIndex = j;
-                    }
-                }
-
-                EmployeeData temp = employees[i];
-                employees[i] = employees[selectedIndex];
-                employees[selectedIndex] = temp;
-            }
+            MergeSortEmployees(
+                employees,
+                temp,
+                0,
+                employees.Length - 1,
+                baseOption);
 
             if(descending)
                 Array.Reverse(employees);
         }
 
+        private static void MergeSortEmployees(
+            EmployeeData[] employees,
+            EmployeeData[] temp,
+            int left,
+            int right,
+            EmployeeSortOption sortOption) {
+            if(left >= right)
+                return;
+
+            int middle = left + (right - left) / 2;
+
+            MergeSortEmployees(
+                employees, temp, left, middle, sortOption);
+
+            MergeSortEmployees(
+                employees, temp, middle + 1, right, sortOption);
+
+            MergeEmployees(
+                employees, temp, left, middle, right, sortOption);
+        }
+
+        private static void MergeEmployees(
+            EmployeeData[] employees,
+            EmployeeData[] temp,
+            int left,
+            int middle,
+            int right,
+            EmployeeSortOption sortOption) {
+            int i = left;
+            int j = middle + 1;
+            int k = left;
+
+            while(i <= middle && j <= right) {
+                if(CompareEmployees(
+                    employees[i],
+                    employees[j],
+                    sortOption) <= 0) {
+                    temp[k++] = employees[i++];
+                }
+                else {
+                    temp[k++] = employees[j++];
+                }
+            }
+
+            while(i <= middle)
+                temp[k++] = employees[i++];
+
+            while(j <= right)
+                temp[k++] = employees[j++];
+
+            for(int index = left; index <= right; index++)
+                employees[index] = temp[index];
+        }
         private static int CompareEmployees(
             EmployeeData first,
             EmployeeData second,
             EmployeeSortOption sortOption) {
             if(first == null && second == null)
                 return 0;
+
             if(first == null)
                 return 1;
+
             if(second == null)
                 return -1;
 
             switch(sortOption) {
                 case EmployeeSortOption.NameAscending:
                     return string.Compare(
-                        first.name, second.name,
+                        first.name,
+                        second.name,
                         StringComparison.OrdinalIgnoreCase);
 
                 case EmployeeSortOption.EmployeeIDAscending:
-                    return first.employeeId.CompareTo(second.employeeId);
+                    return first.employeeId.CompareTo(
+                        second.employeeId);
 
                 case EmployeeSortOption.LastEntranceAscending:
+
                     bool firstValid = DateTime.TryParse(
-                        first.lastEntranceInEngineRoom, out DateTime firstDate);
+                        first.lastEntranceInEngineRoom,
+                        out DateTime firstDate);
 
                     bool secondValid = DateTime.TryParse(
-                        second.lastEntranceInEngineRoom, out DateTime secondDate);
+                        second.lastEntranceInEngineRoom,
+                        out DateTime secondDate);
 
                     if(!firstValid && !secondValid)
                         return 0;
+
                     if(!firstValid)
                         return 1;
+
                     if(!secondValid)
                         return -1;
 
@@ -118,43 +209,3 @@ namespace Utils {
         }
     }
 }
-
-
-//namespace Environment.Diagnostic {
-//    [CreateAssetMenu(
-//        fileName = "SortingTask",
-//        menuName = "Surveillance Tasks/Sorting Task"
-//    )]
-//    public class sortingtask : Task {
-//        public override object Execute() {
-//            //sorting logic here
-
-
-//        }
-//    }
-//}
-
-//static void merge (int [] array, int l, int m, int r) {
-//int sizeleft = m - l + 1;
-//int sizeright = r - (m+1) +1;
-
-// int [] tempLeft = new int[sizeleft];
-// int [] tempRight = new int[sizeright];
-// int i = 0;
-// int j = 0;
-// for(i = 0; i < sizeleft; i++) {
-//tempLeft[i] = array[l + i];
-//}
-//for(j = 0; j < sizeright; j++) {
-//tempRight[j] = array[m + 1 + j];
-//}
-
-//Static void mergesort(int[] array, int l, int r) {
-//    if(l < r) {
-//        int middle = (l + r) / 2;
-//mergesort(array, l, middle);
-//mergesort(array, middle + 1, r);
-//merge(array, l, middle, r);
-//    }
-//merge (intArray, left
-//}
