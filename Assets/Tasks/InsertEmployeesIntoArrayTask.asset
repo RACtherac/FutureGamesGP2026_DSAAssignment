@@ -12,3 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c922283956ec6d40a7fe7460caff21c, type: 3}
   m_Name: InsertEmployeesIntoArrayTask
   m_EditorClassIdentifier: Assembly-CSharp::Environment.Tasks.InsertEmployeesIntoArrayTask
+  nextTask: {fileID: 11400000, guid: ebdb023887f3988479ce365b8e3ab780, type: 2}

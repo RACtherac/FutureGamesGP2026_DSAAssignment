@@ -1,5 +1,5 @@
-using System;
 using UnityEngine;
+using Utils;
 
 namespace Environment.Tasks {
     [CreateAssetMenu(
@@ -11,32 +11,25 @@ namespace Environment.Tasks {
             EmployeeData[] workers = input as EmployeeData[];
 
             if(workers == null) {
-                Debug.LogError("SortWorkersByEntranceTask: No workers array received.");
+                Debug.LogError(
+                    "SortWorkersByEntranceTask: No workers array received."
+                );
+
                 return null;
             }
 
-            for(int i = 0; i < workers.Length - 1; i++) {
-                for(int j = 0; j < workers.Length - 1 - i; j++) {
-                    DateTime firstDate;
-                    DateTime secondDate;
+            SortingUtils.SortEmployees(
+                workers,
+                EmployeeSortOption.LastEntranceAscending
+            );
 
-                    bool firstValid = DateTime.TryParse(
-                        workers[j].lastEntranceInEngineRoom,
-                        out firstDate
-                    );
-
-                    bool secondValid = DateTime.TryParse(
-                        workers[j + 1].lastEntranceInEngineRoom,
-                        out secondDate
-                    );
-
-                    if(firstValid && secondValid && firstDate > secondDate) {
-                        EmployeeData temp = workers[j];
-                        workers[j] = workers[j + 1];
-                        workers[j + 1] = temp;
-                    }
-                }
+            for(int i = 0; i < workers.Length; i++) {
+                Debug.Log(
+                    $"Sorted Array[{i}]: {workers[i].name}, " +
+                    $"Last entrance: {workers[i].lastEntranceInEngineRoom}"
+                );
             }
+
 
             return workers;
         }
