@@ -1,5 +1,6 @@
 using System;
 using Environment.Tasks;
+using Unity.VisualScripting.Dependencies.NCalc;
 
 namespace Utils {
     public enum EmployeeSortOption {
@@ -212,3 +213,24 @@ namespace Utils {
 //quicsort
 //no dot sort
 //happpen through a task 
+
+
+//linear search
+//linearsearch(inArray, target)
+
+//Function linearSearch (inArray, x) {
+//    for i = 0  to inArray.Length - 1 {
+//        if(inArray[i] == target) {
+//            return i;
+//            return -1
+//        }
+//    }
+//})
+
+//binary search
+// if  m == x retunn m
+
+//binarySearch(inArray, x) 
+
+
+//get ranges of values in an array
