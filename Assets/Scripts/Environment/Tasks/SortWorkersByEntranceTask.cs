@@ -1,5 +1,7 @@
+
 using UnityEngine;
 using Utils;
+using Environment.Diagnostic;
 
 namespace Environment.Tasks {
     [CreateAssetMenu(
@@ -7,6 +9,9 @@ namespace Environment.Tasks {
         menuName = "Surveillance Tasks/Sort Workers By Entrance"
     )]
     public class SortWorkersByEntranceTask : Task {
+        [Header("Next Task")]
+        [SerializeField] private Task nextTask;
+
         public override object Execute(object input = null) {
             EmployeeData[] workers = input as EmployeeData[];
 
@@ -18,11 +23,20 @@ namespace Environment.Tasks {
                 return null;
             }
 
-            SortingUtils.SortEmployees(
-                workers,
-                EmployeeSortOption.LastEntranceAscending
+            // Benchmark Merge Sort
+            TaskBenchmark.Measure(
+                "Merge Sort - Entrance Time",
+                () => {
+                    SortingUtils.SortEmployees(
+                        workers,
+                        EmployeeSortOption.LastEntranceAscending
+                    );
+
+                    return workers;
+                }
             );
 
+            // Display sorted employees
             for(int i = 0; i < workers.Length; i++) {
                 Debug.Log(
                     $"Sorted Array[{i}]: {workers[i].name}, " +
@@ -30,6 +44,10 @@ namespace Environment.Tasks {
                 );
             }
 
+            // Pass sorted employees to the next task
+            if(nextTask != null) {
+                return nextTask.Execute(workers);
+            }
 
             return workers;
         }

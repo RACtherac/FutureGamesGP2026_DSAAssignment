@@ -8,6 +8,7 @@ namespace Environment.Tasks {
     public class InsertEmployeesIntoArrayTask : Task {
         [Header("Next Task")]
         [SerializeField] private Task nextTask;
+        
 
         private EmployeeData[] employees;
 

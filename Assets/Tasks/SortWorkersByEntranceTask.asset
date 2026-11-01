@@ -12,3 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 94f0aa210e5dd2042b9041d32c603084, type: 3}
   m_Name: SortWorkersByEntranceTask
   m_EditorClassIdentifier: Assembly-CSharp::Environment.Tasks.SortWorkersByEntranceTask
+  nextTask: {fileID: 11400000, guid: b636bb922d43bb943b0672394ffaf2ae, type: 2}
