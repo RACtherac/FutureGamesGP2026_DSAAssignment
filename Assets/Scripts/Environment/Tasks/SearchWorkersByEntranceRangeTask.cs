@@ -1,4 +1,3 @@
-
 using Environment.Diagnostic;
 using System;
 using System.Globalization;
@@ -66,10 +65,8 @@ namespace Environment.Tasks {
             EmployeeData[] workers,
             DateTime start,
             DateTime end) {
-            // Find the first worker whose entrance is >= start.
             int first = LowerBound(workers, start);
 
-            // Find the first worker whose entrance is > end.
             int last = UpperBound(workers, end);
 
             int count = last - first;

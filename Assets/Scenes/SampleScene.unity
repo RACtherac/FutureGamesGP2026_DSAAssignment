@@ -169,7 +169,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.ContentSizeFitter
-  m_HorizontalFit: 0
+  m_HorizontalFit: 3
   m_VerticalFit: 2
 --- !u!114 &36088660
 MonoBehaviour:
@@ -189,7 +189,7 @@ MonoBehaviour:
     m_Top: 0
     m_Bottom: 0
   m_ChildAlignment: 0
-  m_Spacing: 8
+  m_Spacing: 2
   m_ChildForceExpandWidth: 1
   m_ChildForceExpandHeight: 0
   m_ChildControlWidth: 1
@@ -11022,7 +11022,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b879689ecf99d5243820476d5ff8f5ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ComputerTerminal
-  testTask: {fileID: 0}
+  testTask: {fileID: 11400000, guid: 78d970871f6156640be3dd870c02dd80, type: 2}
   terminalUI: {fileID: 1986686964}
   scriptsToDisable: []
 --- !u!1001 &8404672306686481740

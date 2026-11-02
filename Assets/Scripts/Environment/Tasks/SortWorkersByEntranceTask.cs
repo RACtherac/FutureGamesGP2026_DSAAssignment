@@ -23,7 +23,6 @@ namespace Environment.Tasks {
                 return null;
             }
 
-            // Benchmark Merge Sort
             TaskBenchmark.Measure(
                 "Merge Sort - Entrance Time",
                 () => {
@@ -36,7 +35,6 @@ namespace Environment.Tasks {
                 }
             );
 
-            // Display sorted employees
             for(int i = 0; i < workers.Length; i++) {
                 Debug.Log(
                     $"Sorted Array[{i}]: {workers[i].name}, " +
@@ -44,7 +42,6 @@ namespace Environment.Tasks {
                 );
             }
 
-            // Pass sorted employees to the next task
             if(nextTask != null) {
                 return nextTask.Execute(workers);
             }

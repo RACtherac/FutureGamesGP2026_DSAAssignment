@@ -7,7 +7,7 @@ namespace Environment.Tasks {
         menuName = "Surveillance Tasks/Read Employees"
     )]
     public class ReadEmployeesTask : Task {
-        [SerializeField] private string fileName = "Employees.json";
+        [SerializeField] private string fileName = "EmployeesFull.json";
         [SerializeField] private Task nextTask;
 
         public override object Execute(object input = null) {

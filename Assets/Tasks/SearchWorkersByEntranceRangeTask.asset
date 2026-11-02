@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7ca7b5bc6c859b5419bf4e06f9dcac50, type: 3}
   m_Name: SearchWorkersByEntranceRangeTask
   m_EditorClassIdentifier: Assembly-CSharp::Environment.Tasks.SearchWorkersByEntranceRangeTask
-  startDate: 2234-08-09T22:13:12
-  endDate: 2234-08-09T22:13:17
+  startDate: 1000-01-01T00:00:00
+  endDate: 3000-08-09T22:13:22

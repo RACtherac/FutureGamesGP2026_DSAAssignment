@@ -331,7 +331,6 @@ public class ComputerTerminalUI : MonoBehaviour {
             output.AppendLine(
                 $"LAST EXIT: {employee.lastExitFromEngineRoom}"
             );
-            output.AppendLine();
         }
 
         if(employees.Length == 0)
