@@ -1,3 +1,4 @@
+
 using System.Collections;
 using System.Collections.Generic;
 using Environment.Tasks;
@@ -8,6 +9,7 @@ using UnityEngine.UI;
 using Utils;
 
 public class ComputerTerminalUI : MonoBehaviour {
+
     [Header("Terminal Panel")]
     [SerializeField] private GameObject terminalPanel;
 
@@ -35,6 +37,9 @@ public class ComputerTerminalUI : MonoBehaviour {
     [Header("Terminal Logo")]
     [SerializeField] private GameObject terminalLogo;
 
+    [Header("Employee Display")]
+    [SerializeField] private int employeesPerTextBlock = 40;
+
     private Task taskToExecute;
     private ComputerTerminal activeTerminal;
 
@@ -45,7 +50,11 @@ public class ComputerTerminalUI : MonoBehaviour {
     private EmployeeSortOption currentSort =
         EmployeeSortOption.NameAscending;
 
+    private readonly List<TMP_Text> employeeTextBlocks =
+        new List<TMP_Text>();
+
     private void Awake() {
+
         if(terminalPanel != null)
             terminalPanel.SetActive(false);
 
@@ -61,19 +70,24 @@ public class ComputerTerminalUI : MonoBehaviour {
         if(statusText != null)
             statusText.gameObject.SetActive(true);
 
+        // Register the original employee text object.
+        if(employeeDataText != null)
+            employeeTextBlocks.Add(employeeDataText);
+
         SetupSortDropdown();
 
-        if(searchInput != null) {
+        if(searchInput != null)
             searchInput.onValueChanged.AddListener(SearchEmployees);
-        }
     }
 
     private void Update() {
+
         if(terminalPanel == null || !terminalPanel.activeSelf)
             return;
 
         if(Keyboard.current != null &&
             Keyboard.current.escapeKey.wasPressedThisFrame) {
+
             if(activeTerminal != null)
                 activeTerminal.CloseTerminal();
             else
@@ -84,6 +98,7 @@ public class ComputerTerminalUI : MonoBehaviour {
     public void OpenTerminal(
         Task task,
         ComputerTerminal computerTerminal) {
+
         if(task == null) {
             Debug.LogError(
                 "ComputerTerminalUI: No task received.",
@@ -133,8 +148,8 @@ public class ComputerTerminalUI : MonoBehaviour {
     }
 
     private IEnumerator BootSequence() {
-        string[] bootLines =
-        {
+
+        string[] bootLines = {
             "BIOS CHECK ................. OK",
             "MEMORY TEST ................ OK",
             "PERSONNEL MODULE ........... OK",
@@ -147,7 +162,9 @@ public class ComputerTerminalUI : MonoBehaviour {
             statusText.text = "";
 
         for(int i = 0; i < bootLines.Length; i++) {
+
             if(statusText != null) {
+
                 if(i > 0)
                     statusText.text += "\n";
 
@@ -167,6 +184,7 @@ public class ComputerTerminalUI : MonoBehaviour {
     }
 
     private void SetProgress(float progress) {
+
         if(progressBarFill == null)
             return;
 
@@ -176,6 +194,7 @@ public class ComputerTerminalUI : MonoBehaviour {
     }
 
     private void LoadEmployeeData() {
+
         if(taskToExecute == null) {
             Debug.LogError(
                 "ComputerTerminalUI: No task to execute.",
@@ -189,6 +208,7 @@ public class ComputerTerminalUI : MonoBehaviour {
         allEmployees = result as EmployeeData[];
 
         if(allEmployees == null) {
+
             Debug.LogError(
                 "ComputerTerminalUI: The task did not return EmployeeData[]. " +
                 "Check the task's Execute() return value.",
@@ -197,6 +217,10 @@ public class ComputerTerminalUI : MonoBehaviour {
 
             allEmployees = new EmployeeData[0];
         }
+
+        Debug.Log(
+            $"[Terminal] Loaded {allEmployees.Length} employees."
+        );
 
         if(statusText != null)
             statusText.gameObject.SetActive(false);
@@ -222,13 +246,13 @@ public class ComputerTerminalUI : MonoBehaviour {
     }
 
     private void SetupSortDropdown() {
+
         if(sortDropdown == null)
             return;
 
         sortDropdown.ClearOptions();
 
-        sortDropdown.AddOptions(new List<string>
-        {
+        sortDropdown.AddOptions(new List<string> {
             "Name (A-Z)",
             "Name (Z-A)",
             "Employee ID (Low-High)",
@@ -244,6 +268,7 @@ public class ComputerTerminalUI : MonoBehaviour {
     }
 
     private void OnSortChanged(int selectedIndex) {
+
         currentSort = GetSortOption();
 
         SearchEmployees(
@@ -252,10 +277,12 @@ public class ComputerTerminalUI : MonoBehaviour {
     }
 
     private EmployeeSortOption GetSortOption() {
+
         if(sortDropdown == null)
             return EmployeeSortOption.NameAscending;
 
         switch(sortDropdown.value) {
+
             case 1:
                 return EmployeeSortOption.NameDescending;
 
@@ -277,6 +304,7 @@ public class ComputerTerminalUI : MonoBehaviour {
     }
 
     private void SearchEmployees(string searchText) {
+
         if(employeeDataText == null)
             return;
 
@@ -288,6 +316,7 @@ public class ComputerTerminalUI : MonoBehaviour {
             : searchText.Trim().ToLowerInvariant();
 
         foreach(EmployeeData employee in allEmployees) {
+
             if(employee == null)
                 continue;
 
@@ -297,6 +326,7 @@ public class ComputerTerminalUI : MonoBehaviour {
             if(query == "" ||
                 employeeName.ToLowerInvariant().Contains(query) ||
                 employeeID.Contains(query)) {
+
                 filteredEmployees.Add(employee);
             }
         }
@@ -313,30 +343,74 @@ public class ComputerTerminalUI : MonoBehaviour {
     }
 
     private void DisplayEmployees(EmployeeData[] employees) {
-        System.Text.StringBuilder output =
-            new System.Text.StringBuilder();
 
-        for(int i = 0; i < employees.Length; i++) {
-            EmployeeData employee = employees[i];
+        int blockSize = Mathf.Max(1, employeesPerTextBlock);
 
-            output.AppendLine("----------------------------------------");
-            output.AppendLine($"NAME: {employee.name}");
-            output.AppendLine($"EMPLOYEE ID: {employee.employeeId}");
-            output.AppendLine(
-                $"ENGINE ROOM CLEARANCE: {employee.hasEngineRoomClearance}"
+        int requiredBlocks = Mathf.Max(
+            1,
+            Mathf.CeilToInt(employees.Length / (float)blockSize)
+        );
+
+        EnsureEmployeeTextBlocks(requiredBlocks);
+
+        for(int blockIndex = 0;
+            blockIndex < employeeTextBlocks.Count;
+            blockIndex++) {
+
+            TMP_Text currentText = employeeTextBlocks[blockIndex];
+
+            if(currentText == null)
+                continue;
+
+            bool shouldBeActive = blockIndex < requiredBlocks;
+
+            currentText.gameObject.SetActive(shouldBeActive);
+
+            if(!shouldBeActive)
+                continue;
+
+            System.Text.StringBuilder output =
+                new System.Text.StringBuilder();
+
+            int startIndex = blockIndex * blockSize;
+
+            int endIndex = Mathf.Min(
+                startIndex + blockSize,
+                employees.Length
             );
-            output.AppendLine(
-                $"LAST ENTRANCE: {employee.lastEntranceInEngineRoom}"
-            );
-            output.AppendLine(
-                $"LAST EXIT: {employee.lastExitFromEngineRoom}"
-            );
+
+            for(int i = startIndex; i < endIndex; i++) {
+
+                EmployeeData employee = employees[i];
+
+                output.AppendLine(
+                    "----------------------------------------"
+                );
+
+                output.AppendLine($"NAME: {employee.name}");
+
+                output.AppendLine(
+                    $"EMPLOYEE ID: {employee.employeeId}"
+                );
+
+                output.AppendLine(
+                    $"ENGINE ROOM CLEARANCE: {employee.hasEngineRoomClearance}"
+                );
+
+                output.AppendLine(
+                    $"LAST ENTRANCE: {employee.lastEntranceInEngineRoom}"
+                );
+
+                output.AppendLine(
+                    $"LAST EXIT: {employee.lastExitFromEngineRoom}"
+                );
+            }
+
+            if(employees.Length == 0)
+                output.AppendLine("NO MATCHING EMPLOYEES FOUND.");
+
+            currentText.text = output.ToString();
         }
-
-        if(employees.Length == 0)
-            output.AppendLine("NO MATCHING EMPLOYEES FOUND.");
-
-        employeeDataText.text = output.ToString();
 
         if(employeeCountText != null) {
             employeeCountText.text =
@@ -344,12 +418,78 @@ public class ComputerTerminalUI : MonoBehaviour {
         }
 
         if(employeeScrollRect != null) {
+
             Canvas.ForceUpdateCanvases();
+
+            if(employeeScrollRect.content != null) {
+
+                LayoutRebuilder.ForceRebuildLayoutImmediate(
+                    employeeScrollRect.content
+                );
+            }
+
+            Canvas.ForceUpdateCanvases();
+
             employeeScrollRect.verticalNormalizedPosition = 1f;
         }
     }
 
+
+    private void EnsureEmployeeTextBlocks(int requiredBlocks) {
+
+        while(employeeTextBlocks.Count < requiredBlocks) {
+
+            GameObject newTextObject = Instantiate(
+                employeeDataText.gameObject,
+                employeeDataText.transform.parent,
+                false
+            );
+
+            newTextObject.name =
+                $"EmployeeDataText_{employeeTextBlocks.Count + 1}";
+
+            TMP_Text newText =
+                newTextObject.GetComponent<TMP_Text>();
+
+            if(newText == null) {
+                Debug.LogError("TMP_Text missing from cloned object.");
+                Destroy(newTextObject);
+                return;
+            }
+
+            RectTransform rect =
+                newTextObject.GetComponent<RectTransform>();
+
+            // Stretch horizontally and anchor to the top.
+            rect.anchorMin = new Vector2(0, 1);
+            rect.anchorMax = new Vector2(1, 1);
+
+            // Set pivot to the top.
+            rect.pivot = new Vector2(0.5f, 1);
+
+            // Reset scale and rotation.
+            rect.localScale = Vector3.one;
+            rect.localRotation = Quaternion.identity;
+
+            // Reset position.
+            rect.anchoredPosition = Vector2.zero;
+
+            // Let the Vertical Layout Group calculate height.
+            rect.sizeDelta = new Vector2(0, 0);
+
+            newText.text = "";
+
+            employeeTextBlocks.Add(newText);
+
+            Debug.Log(
+                $"Created employee text block: {employeeTextBlocks.Count}"
+            );
+        }
+    }
+
+
     public void CloseImmediately() {
+
         if(bootCoroutine != null) {
             StopCoroutine(bootCoroutine);
             bootCoroutine = null;
@@ -376,6 +516,7 @@ public class ComputerTerminalUI : MonoBehaviour {
     }
 
     private void OnDestroy() {
+
         if(searchInput != null)
             searchInput.onValueChanged.RemoveListener(SearchEmployees);
 
