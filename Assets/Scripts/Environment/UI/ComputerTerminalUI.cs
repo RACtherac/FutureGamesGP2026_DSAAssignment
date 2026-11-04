@@ -1,4 +1,3 @@
-
 using System.Collections;
 using System.Collections.Generic;
 using Environment.Tasks;
@@ -70,7 +69,6 @@ public class ComputerTerminalUI : MonoBehaviour {
         if(statusText != null)
             statusText.gameObject.SetActive(true);
 
-        // Register the original employee text object.
         if(employeeDataText != null)
             employeeTextBlocks.Add(employeeDataText);
 
@@ -460,21 +458,16 @@ public class ComputerTerminalUI : MonoBehaviour {
             RectTransform rect =
                 newTextObject.GetComponent<RectTransform>();
 
-            // Stretch horizontally and anchor to the top.
             rect.anchorMin = new Vector2(0, 1);
             rect.anchorMax = new Vector2(1, 1);
 
-            // Set pivot to the top.
             rect.pivot = new Vector2(0.5f, 1);
 
-            // Reset scale and rotation.
             rect.localScale = Vector3.one;
             rect.localRotation = Quaternion.identity;
 
-            // Reset position.
             rect.anchoredPosition = Vector2.zero;
 
-            // Let the Vertical Layout Group calculate height.
             rect.sizeDelta = new Vector2(0, 0);
 
             newText.text = "";
