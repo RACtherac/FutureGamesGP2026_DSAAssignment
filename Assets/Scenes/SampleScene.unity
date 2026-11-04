@@ -2643,7 +2643,7 @@ RectTransform:
   m_AnchorMin: {x: 0.1, y: 0.05}
   m_AnchorMax: {x: 0.9, y: 0.46}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: -425.67}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!114 &579866925
 MonoBehaviour:
@@ -8097,7 +8097,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1636060211
 RectTransform:
   m_ObjectHideFlags: 0
@@ -10163,8 +10163,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ComputerTerminalUI
   terminalPanel: {fileID: 2007429046}
+  terminalLogo: {fileID: 2010428821}
   headerText: {fileID: 1621114663}
   statusText: {fileID: 438648175}
+  footerText: {fileID: 1846834845}
   loadingBarContainer: {fileID: 66103664}
   progressBarFill: {fileID: 1605767048}
   lineDelay: 0.45
@@ -10174,10 +10176,8 @@ MonoBehaviour:
   employeeDataText: {fileID: 2033623441}
   searchInput: {fileID: 1149130549}
   employeeScrollRect: {fileID: 1312208960}
-  sortDropdown: {fileID: 1578432419}
-  footerText: {fileID: 1846834845}
-  terminalLogo: {fileID: 2010428821}
   employeesPerTextBlock: 40
+  sortDropdown: {fileID: 1578432419}
 --- !u!1 &2007429046
 GameObject:
   m_ObjectHideFlags: 0

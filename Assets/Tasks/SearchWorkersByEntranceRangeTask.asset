@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: SearchWorkersByEntranceRangeTask
   m_EditorClassIdentifier: Assembly-CSharp::Environment.Tasks.SearchWorkersByEntranceRangeTask
   startDate: 1000-01-01T00:00:00
-  endDate: 3000-08-09T22:13:22
+  endDate: 3000-01-01T00:00:00

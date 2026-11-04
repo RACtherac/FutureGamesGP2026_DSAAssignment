@@ -1,5 +1,7 @@
+
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using Environment.Tasks;
 using TMPro;
 using UnityEngine;
@@ -9,62 +11,44 @@ using Utils;
 
 public class ComputerTerminalUI : MonoBehaviour {
 
-    [Header("Terminal Panel")]
+    [Header("Terminal")]
     [SerializeField] private GameObject terminalPanel;
-
-    [Header("Boot UI")]
+    [SerializeField] private GameObject terminalLogo;
     [SerializeField] private TMP_Text headerText;
     [SerializeField] private TMP_Text statusText;
+    [SerializeField] private TMP_Text footerText;
     [SerializeField] private GameObject loadingBarContainer;
     [SerializeField] private RectTransform progressBarFill;
     [SerializeField] private float lineDelay = 0.45f;
     [SerializeField] private float loginDelay = 1f;
 
-    [Header("Employee Database UI")]
+    [Header("Employee Database")]
     [SerializeField] private GameObject employeeDatabasePanel;
     [SerializeField] private TMP_Text employeeCountText;
     [SerializeField] private TMP_Text employeeDataText;
     [SerializeField] private TMP_InputField searchInput;
     [SerializeField] private ScrollRect employeeScrollRect;
+    [SerializeField] private int employeesPerTextBlock = 40;
 
     [Header("Sorting")]
     [SerializeField] private TMP_Dropdown sortDropdown;
 
-    [Header("Footer")]
-    [SerializeField] private TMP_Text footerText;
-
-    [Header("Terminal Logo")]
-    [SerializeField] private GameObject terminalLogo;
-
-    [Header("Employee Display")]
-    [SerializeField] private int employeesPerTextBlock = 40;
-
     private Task taskToExecute;
     private ComputerTerminal activeTerminal;
-
     private EmployeeData[] allEmployees = new EmployeeData[0];
 
     private Coroutine bootCoroutine;
+    private EmployeeSortOption currentSort = EmployeeSortOption.NameAscending;
 
-    private EmployeeSortOption currentSort =
-        EmployeeSortOption.NameAscending;
-
-    private readonly List<TMP_Text> employeeTextBlocks =
-        new List<TMP_Text>();
+    private readonly List<TMP_Text> employeeTextBlocks = new();
 
     private void Awake() {
 
-        if(terminalPanel != null)
-            terminalPanel.SetActive(false);
+        SetActive(terminalPanel, false);
+        SetActive(employeeDatabasePanel, false);
+        SetActive(terminalLogo, false);
 
-        if(employeeDatabasePanel != null)
-            employeeDatabasePanel.SetActive(false);
-
-        if(terminalLogo != null)
-            terminalLogo.SetActive(false);
-
-        if(loadingBarContainer != null)
-            loadingBarContainer.SetActive(true);
+        SetActive(loadingBarContainer, true);
 
         if(statusText != null)
             statusText.gameObject.SetActive(true);
@@ -84,7 +68,7 @@ public class ComputerTerminalUI : MonoBehaviour {
             return;
 
         if(Keyboard.current != null &&
-            Keyboard.current.escapeKey.wasPressedThisFrame) {
+           Keyboard.current.escapeKey.wasPressedThisFrame) {
 
             if(activeTerminal != null)
                 activeTerminal.CloseTerminal();
@@ -93,34 +77,23 @@ public class ComputerTerminalUI : MonoBehaviour {
         }
     }
 
-    public void OpenTerminal(
-        Task task,
-        ComputerTerminal computerTerminal) {
+    public void OpenTerminal(Task task, ComputerTerminal computerTerminal) {
 
         if(task == null) {
-            Debug.LogError(
-                "ComputerTerminalUI: No task received.",
-                this
-            );
+            Debug.LogError("No task received.", this);
             return;
         }
 
         taskToExecute = task;
         activeTerminal = computerTerminal;
 
-        if(bootCoroutine != null) {
+        if(bootCoroutine != null)
             StopCoroutine(bootCoroutine);
-            bootCoroutine = null;
-        }
 
-        if(terminalPanel != null)
-            terminalPanel.SetActive(true);
-
-        if(employeeDatabasePanel != null)
-            employeeDatabasePanel.SetActive(false);
-
-        if(loadingBarContainer != null)
-            loadingBarContainer.SetActive(true);
+        SetActive(terminalPanel, true);
+        SetActive(employeeDatabasePanel, false);
+        SetActive(loadingBarContainer, true);
+        SetActive(terminalLogo, true);
 
         if(statusText != null) {
             statusText.gameObject.SetActive(true);
@@ -133,21 +106,14 @@ public class ComputerTerminalUI : MonoBehaviour {
         if(footerText != null)
             footerText.text = "INITIALIZING...";
 
-        if(progressBarFill != null) {
-            Vector3 scale = progressBarFill.localScale;
-            scale.x = 0f;
-            progressBarFill.localScale = scale;
-        }
-
-        if(terminalLogo != null)
-            terminalLogo.SetActive(true);
+        SetProgress(0);
 
         bootCoroutine = StartCoroutine(BootSequence());
     }
 
     private IEnumerator BootSequence() {
 
-        string[] bootLines = {
+        string[] lines = {
             "BIOS CHECK ................. OK",
             "MEMORY TEST ................ OK",
             "PERSONNEL MODULE ........... OK",
@@ -156,20 +122,12 @@ public class ComputerTerminalUI : MonoBehaviour {
             "ACCESS GRANTED"
         };
 
-        if(statusText != null)
-            statusText.text = "";
+        for(int i = 0; i < lines.Length; i++) {
 
-        for(int i = 0; i < bootLines.Length; i++) {
+            if(statusText != null)
+                statusText.text += (i > 0 ? "\n" : "") + lines[i];
 
-            if(statusText != null) {
-
-                if(i > 0)
-                    statusText.text += "\n";
-
-                statusText.text += bootLines[i];
-            }
-
-            SetProgress((float)(i + 1) / bootLines.Length);
+            SetProgress((float)(i + 1) / lines.Length);
 
             yield return new WaitForSecondsRealtime(lineDelay);
         }
@@ -177,60 +135,37 @@ public class ComputerTerminalUI : MonoBehaviour {
         yield return new WaitForSecondsRealtime(loginDelay);
 
         LoadEmployeeData();
-
         bootCoroutine = null;
     }
 
-    private void SetProgress(float progress) {
+    private void SetProgress(float value) {
 
         if(progressBarFill == null)
             return;
 
         Vector3 scale = progressBarFill.localScale;
-        scale.x = Mathf.Clamp01(progress);
+        scale.x = Mathf.Clamp01(value);
         progressBarFill.localScale = scale;
     }
 
     private void LoadEmployeeData() {
 
         if(taskToExecute == null) {
-            Debug.LogError(
-                "ComputerTerminalUI: No task to execute.",
-                this
-            );
+            Debug.LogError("No task to execute.", this);
             return;
         }
 
-        object result = taskToExecute.Execute();
+        allEmployees = taskToExecute.Execute() as EmployeeData[]
+                      ?? new EmployeeData[0];
 
-        allEmployees = result as EmployeeData[];
-
-        if(allEmployees == null) {
-
-            Debug.LogError(
-                "ComputerTerminalUI: The task did not return EmployeeData[]. " +
-                "Check the task's Execute() return value.",
-                this
-            );
-
-            allEmployees = new EmployeeData[0];
-        }
-
-        Debug.Log(
-            $"[Terminal] Loaded {allEmployees.Length} employees."
-        );
+        Debug.Log($"[Terminal] Loaded {allEmployees.Length} employees.");
 
         if(statusText != null)
             statusText.gameObject.SetActive(false);
 
-        if(loadingBarContainer != null)
-            loadingBarContainer.SetActive(false);
-
-        if(terminalLogo != null)
-            terminalLogo.SetActive(false);
-
-        if(employeeDatabasePanel != null)
-            employeeDatabasePanel.SetActive(true);
+        SetActive(loadingBarContainer, false);
+        SetActive(terminalLogo, false);
+        SetActive(employeeDatabasePanel, true);
 
         if(footerText != null)
             footerText.text = "PERSONNEL DATABASE // CONNECTED";
@@ -239,7 +174,6 @@ public class ComputerTerminalUI : MonoBehaviour {
             searchInput.SetTextWithoutNotify("");
 
         currentSort = GetSortOption();
-
         SearchEmployees("");
     }
 
@@ -261,17 +195,14 @@ public class ComputerTerminalUI : MonoBehaviour {
 
         sortDropdown.SetValueWithoutNotify(0);
         sortDropdown.RefreshShownValue();
-
         sortDropdown.onValueChanged.AddListener(OnSortChanged);
     }
 
-    private void OnSortChanged(int selectedIndex) {
+    private void OnSortChanged(int index) {
 
         currentSort = GetSortOption();
 
-        SearchEmployees(
-            searchInput != null ? searchInput.text : ""
-        );
+        SearchEmployees(searchInput != null ? searchInput.text : "");
     }
 
     private EmployeeSortOption GetSortOption() {
@@ -280,206 +211,131 @@ public class ComputerTerminalUI : MonoBehaviour {
             return EmployeeSortOption.NameAscending;
 
         switch(sortDropdown.value) {
-
-            case 1:
-                return EmployeeSortOption.NameDescending;
-
-            case 2:
-                return EmployeeSortOption.EmployeeIDAscending;
-
-            case 3:
-                return EmployeeSortOption.EmployeeIDDescending;
-
-            case 4:
-                return EmployeeSortOption.LastEntranceAscending;
-
-            case 5:
-                return EmployeeSortOption.LastEntranceDescending;
-
-            default:
-                return EmployeeSortOption.NameAscending;
+            case 1: return EmployeeSortOption.NameDescending;
+            case 2: return EmployeeSortOption.EmployeeIDAscending;
+            case 3: return EmployeeSortOption.EmployeeIDDescending;
+            case 4: return EmployeeSortOption.LastEntranceAscending;
+            case 5: return EmployeeSortOption.LastEntranceDescending;
+            default: return EmployeeSortOption.NameAscending;
         }
     }
 
-    private void SearchEmployees(string searchText) {
+    private void SearchEmployees(string query) {
 
-        if(employeeDataText == null)
-            return;
-
-        List<EmployeeData> filteredEmployees =
-            new List<EmployeeData>();
-
-        string query = string.IsNullOrWhiteSpace(searchText)
-            ? ""
-            : searchText.Trim().ToLowerInvariant();
+        List<EmployeeData> filtered = new();
 
         foreach(EmployeeData employee in allEmployees) {
 
             if(employee == null)
                 continue;
 
-            string employeeName = employee.name ?? "";
-            string employeeID = employee.employeeId.ToString();
+            if(string.IsNullOrWhiteSpace(query) ||
+               employee.name.IndexOf(query.Trim(), System.StringComparison.OrdinalIgnoreCase) >= 0 ||
+               employee.employeeId.ToString().Contains(query.Trim())) {
 
-            if(query == "" ||
-                employeeName.ToLowerInvariant().Contains(query) ||
-                employeeID.Contains(query)) {
-
-                filteredEmployees.Add(employee);
+                filtered.Add(employee);
             }
         }
 
-        EmployeeData[] sortedEmployees =
-            filteredEmployees.ToArray();
+        EmployeeData[] results = filtered.ToArray();
 
-        SortingUtils.SortEmployees(
-            sortedEmployees,
-            currentSort
-        );
-
-        DisplayEmployees(sortedEmployees);
+        SortingUtils.SortEmployees(results, currentSort);
+        DisplayEmployees(results);
     }
 
     private void DisplayEmployees(EmployeeData[] employees) {
 
         int blockSize = Mathf.Max(1, employeesPerTextBlock);
 
-        int requiredBlocks = Mathf.Max(
-            1,
-            Mathf.CeilToInt(employees.Length / (float)blockSize)
-        );
+        int requiredBlocks = Mathf.Max(1,
+            Mathf.CeilToInt((float)employees.Length / blockSize));
 
         EnsureEmployeeTextBlocks(requiredBlocks);
 
-        for(int blockIndex = 0;
-            blockIndex < employeeTextBlocks.Count;
-            blockIndex++) {
+        for(int b = 0; b < employeeTextBlocks.Count; b++) {
 
-            TMP_Text currentText = employeeTextBlocks[blockIndex];
+            TMP_Text text = employeeTextBlocks[b];
 
-            if(currentText == null)
+            if(text == null)
                 continue;
 
-            bool shouldBeActive = blockIndex < requiredBlocks;
+            text.gameObject.SetActive(b < requiredBlocks);
 
-            currentText.gameObject.SetActive(shouldBeActive);
-
-            if(!shouldBeActive)
+            if(b >= requiredBlocks)
                 continue;
 
-            System.Text.StringBuilder output =
-                new System.Text.StringBuilder();
+            StringBuilder output = new();
 
-            int startIndex = blockIndex * blockSize;
+            int start = b * blockSize;
+            int end = Mathf.Min(start + blockSize, employees.Length);
 
-            int endIndex = Mathf.Min(
-                startIndex + blockSize,
-                employees.Length
-            );
+            for(int i = start; i < end; i++) {
 
-            for(int i = startIndex; i < endIndex; i++) {
+                EmployeeData e = employees[i];
 
-                EmployeeData employee = employees[i];
-
-                output.AppendLine(
-                    "----------------------------------------"
-                );
-
-                output.AppendLine($"NAME: {employee.name}");
-
-                output.AppendLine(
-                    $"EMPLOYEE ID: {employee.employeeId}"
-                );
-
-                output.AppendLine(
-                    $"ENGINE ROOM CLEARANCE: {employee.hasEngineRoomClearance}"
-                );
-
-                output.AppendLine(
-                    $"LAST ENTRANCE: {employee.lastEntranceInEngineRoom}"
-                );
-
-                output.AppendLine(
-                    $"LAST EXIT: {employee.lastExitFromEngineRoom}"
-                );
+                output.AppendLine("----------------------------------------");
+                output.AppendLine($"NAME: {e.name}");
+                output.AppendLine($"EMPLOYEE ID: {e.employeeId}");
+                output.AppendLine($"ENGINE ROOM CLEARANCE: {e.hasEngineRoomClearance}");
+                output.AppendLine($"LAST ENTRANCE: {e.lastEntranceInEngineRoom}");
+                output.AppendLine($"LAST EXIT: {e.lastExitFromEngineRoom}");
             }
 
             if(employees.Length == 0)
                 output.AppendLine("NO MATCHING EMPLOYEES FOUND.");
 
-            currentText.text = output.ToString();
+            text.text = output.ToString();
         }
 
-        if(employeeCountText != null) {
-            employeeCountText.text =
-                $"RECORDS FOUND: {employees.Length}";
-        }
+        if(employeeCountText != null)
+            employeeCountText.text = $"RECORDS FOUND: {employees.Length}";
 
         if(employeeScrollRect != null) {
 
             Canvas.ForceUpdateCanvases();
 
-            if(employeeScrollRect.content != null) {
-
-                LayoutRebuilder.ForceRebuildLayoutImmediate(
-                    employeeScrollRect.content
-                );
-            }
+            if(employeeScrollRect.content != null)
+                LayoutRebuilder.ForceRebuildLayoutImmediate(employeeScrollRect.content);
 
             Canvas.ForceUpdateCanvases();
-
             employeeScrollRect.verticalNormalizedPosition = 1f;
         }
     }
 
+    private void EnsureEmployeeTextBlocks(int required) {
 
-    private void EnsureEmployeeTextBlocks(int requiredBlocks) {
+        while(employeeTextBlocks.Count < required) {
 
-        while(employeeTextBlocks.Count < requiredBlocks) {
-
-            GameObject newTextObject = Instantiate(
+            GameObject obj = Instantiate(
                 employeeDataText.gameObject,
                 employeeDataText.transform.parent,
                 false
             );
 
-            newTextObject.name =
-                $"EmployeeDataText_{employeeTextBlocks.Count + 1}";
+            obj.name = $"EmployeeDataText_{employeeTextBlocks.Count + 1}";
 
-            TMP_Text newText =
-                newTextObject.GetComponent<TMP_Text>();
+            TMP_Text text = obj.GetComponent<TMP_Text>();
 
-            if(newText == null) {
+            if(text == null) {
                 Debug.LogError("TMP_Text missing from cloned object.");
-                Destroy(newTextObject);
+                Destroy(obj);
                 return;
             }
 
-            RectTransform rect =
-                newTextObject.GetComponent<RectTransform>();
+            RectTransform rect = obj.GetComponent<RectTransform>();
 
             rect.anchorMin = new Vector2(0, 1);
             rect.anchorMax = new Vector2(1, 1);
-
             rect.pivot = new Vector2(0.5f, 1);
-
             rect.localScale = Vector3.one;
             rect.localRotation = Quaternion.identity;
-
             rect.anchoredPosition = Vector2.zero;
+            rect.sizeDelta = Vector2.zero;
 
-            rect.sizeDelta = new Vector2(0, 0);
-
-            newText.text = "";
-
-            employeeTextBlocks.Add(newText);
-
-            Debug.Log(
-                $"Created employee text block: {employeeTextBlocks.Count}"
-            );
+            text.text = "";
+            employeeTextBlocks.Add(text);
         }
     }
-
 
     public void CloseImmediately() {
 
@@ -488,17 +344,10 @@ public class ComputerTerminalUI : MonoBehaviour {
             bootCoroutine = null;
         }
 
-        if(terminalPanel != null)
-            terminalPanel.SetActive(false);
-
-        if(employeeDatabasePanel != null)
-            employeeDatabasePanel.SetActive(false);
-
-        if(terminalLogo != null)
-            terminalLogo.SetActive(false);
-
-        if(loadingBarContainer != null)
-            loadingBarContainer.SetActive(false);
+        SetActive(terminalPanel, false);
+        SetActive(employeeDatabasePanel, false);
+        SetActive(terminalLogo, false);
+        SetActive(loadingBarContainer, false);
 
         if(statusText != null)
             statusText.gameObject.SetActive(false);
@@ -506,6 +355,12 @@ public class ComputerTerminalUI : MonoBehaviour {
         taskToExecute = null;
         activeTerminal = null;
         allEmployees = new EmployeeData[0];
+    }
+
+    private void SetActive(GameObject obj, bool active) {
+
+        if(obj != null)
+            obj.SetActive(active);
     }
 
     private void OnDestroy() {
