@@ -15,13 +15,13 @@ namespace Environment.Tasks {
         public override object Execute(object input = null) {
             EmployeeData[] workers = input as EmployeeData[];
 
-            if(workers == null) {
-                Debug.LogError(
-                    "SortWorkersByEntranceTask: No workers array received."
-                );
+            //if(workers == null) {
+            //    Debug.LogError(
+            //        "SortWorkersByEntranceTask: No workers array received."
+            //    );
 
-                return null;
-            }
+            //    return null;
+            //}
 
             TaskBenchmark.Measure(
                 "Merge Sort - Entrance Time",
@@ -35,12 +35,12 @@ namespace Environment.Tasks {
                 }
             );
 
-            for(int i = 0; i < workers.Length; i++) {
-                Debug.Log(
-                    $"Sorted Array[{i}]: {workers[i].name}, " +
-                    $"Last entrance: {workers[i].lastEntranceInEngineRoom}"
-                );
-            }
+            //for(int i = 0; i < workers.Length; i++) {
+            //    Debug.Log(
+            //        $"Sorted Array[{i}]: {workers[i].name}, " +
+            //        $"Last entrance: {workers[i].lastEntranceInEngineRoom}"
+            //    );
+            //}
 
             if(nextTask != null) {
                 return nextTask.Execute(workers);

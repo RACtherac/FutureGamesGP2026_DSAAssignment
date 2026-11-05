@@ -22,14 +22,14 @@ namespace Environment.Tasks {
             EmployeeData[] workers = input as EmployeeData[];
 
             if(workers == null) {
-                Debug.LogError("No employee array received.");
+                //Debug.LogError("No employee array received.");
                 return null;
             }
 
             if(!DateTime.TryParse(startDate, out DateTime start) ||
                !DateTime.TryParse(endDate, out DateTime end) ||
                start > end) {
-                Debug.LogError("Invalid date range.");
+                //Debug.LogError("Invalid date range.");
                 return null;
             }
 
@@ -51,11 +51,11 @@ namespace Environment.Tasks {
                 }
             );
 
-            Debug.Log($"Workers found: {results.Length}");
+            //Debug.Log($"Workers found: {results.Length}");
 
-            foreach(EmployeeData worker in results) {
-                Debug.Log($"{worker.name} - {worker.lastEntranceInEngineRoom}");
-            }
+            //foreach(EmployeeData worker in results) {
+            //    Debug.Log($"{worker.name} - {worker.lastEntranceInEngineRoom}");
+            //}
 
             return results;
         }

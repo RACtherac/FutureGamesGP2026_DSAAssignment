@@ -17,15 +17,15 @@ namespace Environment.Tasks {
                 Application.streamingAssetsPath,
                 fileName
             );
-            Debug.Log("[Station AI] Looking for JSON at: " + filePath);
+            //Debug.Log("[Station AI] Looking for JSON at: " + filePath);
 
-            if(!File.Exists(filePath)) {
-                Debug.LogError(
-                    "Station AI dialogue file was not found: " +
-                    filePath
-                );
-                return null;
-            }
+            //if(!File.Exists(filePath)) {
+            //    Debug.LogError(
+            //        "Station AI dialogue file was not found: " +
+            //        filePath
+            //    );
+            //    return null;
+            //}
 
             try {
                 string json = File.ReadAllText(filePath);
@@ -34,23 +34,23 @@ namespace Environment.Tasks {
                     JsonUtility.FromJson<StationDialogueFile>(json);
 
                 if(data == null || data.nodes == null) {
-                    Debug.LogError(
-                        "Station AI dialogue JSON is empty or invalid."
-                    );
-                    return null;
+                    //Debug.LogError(
+                    //    "Station AI dialogue JSON is empty or invalid."
+                    //);
+                    //return null;
                 }
 
-                Debug.Log(
-                    "Station AI dialogue loaded. Nodes: " +
-                    data.nodes.Length
-                );
+                //Debug.Log(
+                //    "Station AI dialogue loaded. Nodes: " +
+                //    data.nodes.Length
+                //);
 
                 return data;
             }
             catch(Exception exception) {
-                Debug.LogError(
-                    "Failed to read Station AI dialogue."
-                );
+                //Debug.LogError(
+                //    "Failed to read Station AI dialogue."
+                //);
                 Debug.LogException(exception);
                 return null;
             }
