@@ -15,20 +15,25 @@ public class InvestigationObjective {
 public class InvestigationEvidence {
     public string id;
     public string title;
+    [TextArea(2, 5)]
     public string description;
 }
 
 public class InvestigationManager : MonoBehaviour {
     public static InvestigationManager Instance { get; private set; }
 
-    [Header("Objectives")]
-    [SerializeField] private List<InvestigationObjective> objectives = new();
+    [Header("Case File Panel")]
+    [SerializeField] private GameObject investigationPanel;
     [SerializeField] private TMP_Text objectiveText;
-
-    [Header("Evidence")]
     [SerializeField] private TMP_Text evidenceText;
 
-    private readonly List<InvestigationEvidence> evidence = new();
+    [Header("Investigation Objectives")]
+    [SerializeField]
+    private List<InvestigationObjective> objectives =
+        new List<InvestigationObjective>();
+
+    private readonly List<InvestigationEvidence> evidence =
+        new List<InvestigationEvidence>();
 
     private void Awake() {
         if(Instance != null && Instance != this) {
@@ -37,19 +42,24 @@ public class InvestigationManager : MonoBehaviour {
         }
 
         Instance = this;
+
+        if(investigationPanel != null)
+            investigationPanel.SetActive(false);
+
         UpdateUI();
     }
-    //test
-    private void Update() {
-        if(Input.GetKeyDown(KeyCode.F1))
-            CompleteObjective("review_incident");
 
-        if(Input.GetKeyDown(KeyCode.F2))
-            AddEvidence(
-                "test_evidence",
-                "Suspicious access record",
-                "An employee accessed the engine room shortly before the incident."
-            );
+    public void OpenCaseFile() {
+        if(investigationPanel == null)
+            return;
+
+        UpdateUI();
+        investigationPanel.SetActive(true);
+    }
+
+    public void CloseCaseFile() {
+        if(investigationPanel != null)
+            investigationPanel.SetActive(false);
     }
 
     public void CompleteObjective(string objectiveId) {
@@ -60,6 +70,7 @@ public class InvestigationManager : MonoBehaviour {
             return;
 
         objective.completed = true;
+
         Debug.Log("[Investigation] Completed: " + objective.title);
 
         UpdateUI();
@@ -70,6 +81,9 @@ public class InvestigationManager : MonoBehaviour {
         string title,
         string description
     ) {
+        if(string.IsNullOrWhiteSpace(evidenceId))
+            return;
+
         if(evidence.Exists(e => e.id == evidenceId))
             return;
 
@@ -80,6 +94,7 @@ public class InvestigationManager : MonoBehaviour {
         });
 
         Debug.Log("[Investigation] New evidence: " + title);
+
         UpdateUI();
     }
 
@@ -96,18 +111,21 @@ public class InvestigationManager : MonoBehaviour {
 
     private void UpdateUI() {
         if(objectiveText != null) {
-            StringBuilder output = new();
+            StringBuilder output = new StringBuilder();
 
             foreach(InvestigationObjective objective in objectives) {
                 string status = objective.completed ? "[X]" : "[ ]";
-                output.AppendLine(status + " " + objective.title);
+
+                output.AppendLine(
+                    status + " " + objective.title
+                );
             }
 
             objectiveText.text = output.ToString();
         }
 
         if(evidenceText != null) {
-            StringBuilder output = new();
+            StringBuilder output = new StringBuilder();
 
             foreach(InvestigationEvidence item in evidence) {
                 output.AppendLine("> " + item.title);
