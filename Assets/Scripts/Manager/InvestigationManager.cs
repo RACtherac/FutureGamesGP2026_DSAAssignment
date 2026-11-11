@@ -49,13 +49,13 @@ public class InvestigationManager : MonoBehaviour {
         UpdateUI();
     }
 
-    public void OpenCaseFile() {
-        if(investigationPanel == null)
-            return;
+    //public void OpenCaseFile() {
+    //    if(investigationPanel == null)
+    //        return;
 
-        UpdateUI();
-        investigationPanel.SetActive(true);
-    }
+    //    UpdateUI();
+    //    investigationPanel.SetActive(true);
+    //}
 
     public void CloseCaseFile() {
         if(investigationPanel != null)

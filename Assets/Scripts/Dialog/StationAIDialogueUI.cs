@@ -29,6 +29,10 @@ public class StationAIDialogueUI : MonoBehaviour {
     [Header("Player Controls")]
     [SerializeField] private Behaviour[] playerBehavioursToDisable;
 
+    [Header("Investigation UI")]
+    [SerializeField] private GameObject investigationPanel;
+    [SerializeField] private Button investigationButton;
+
     private StationDialogueFile dialogueFile;
     private readonly Dictionary<string, StationDialogueNode> nodesById =
         new Dictionary<string, StationDialogueNode>();
@@ -100,6 +104,24 @@ public class StationAIDialogueUI : MonoBehaviour {
         SetPlayerControls(false);
         ShowNode(dialogueFile.startNodeId);
     }
+    //public void OpenCaseFile() {
+    //    if(investigationPanel == null ||
+    //       !nodesById.ContainsKey(investigationPanel.startNodeId)) {
+
+
+    //        LoadInverstigation();
+    //    }
+
+    //    caseOpen = true;
+
+    //    if(dialoguePanel != null)
+    //        dialoguePanel.SetActive(true);
+    //    else
+    //        Debug.LogError("[Station AI] Dialogue Panel is not assigned.");
+
+    //    SetPlayerControls(false);
+    //    ShowNode(dialogueFile.startNodeId);
+    //}
 
 
     public void CloseDialogue() {
@@ -114,6 +136,8 @@ public class StationAIDialogueUI : MonoBehaviour {
 
         SetPlayerControls(true);
     }
+
+    
 
     private void ShowNode(string nodeId) {
         if(!nodesById.TryGetValue(nodeId, out StationDialogueNode node)) {
