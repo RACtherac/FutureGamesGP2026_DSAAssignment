@@ -1,4 +1,4 @@
-
+//To long ;(
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
@@ -315,12 +315,6 @@ public class ComputerTerminalUI : MonoBehaviour {
             obj.name = $"EmployeeDataText_{employeeTextBlocks.Count + 1}";
 
             TMP_Text text = obj.GetComponent<TMP_Text>();
-
-            if(text == null) {
-                Debug.LogError("TMP_Text missing from cloned object.");
-                Destroy(obj);
-                return;
-            }
 
             RectTransform rect = obj.GetComponent<RectTransform>();
 

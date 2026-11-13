@@ -1,4 +1,3 @@
-
 using Environment.Diagnostic;
 using System;
 using System.Globalization;
@@ -59,7 +58,6 @@ namespace Environment.Tasks {
 
             return results;
         }
-
         private int BinarySearch(
             EmployeeData[] workers,
             DateTime target,

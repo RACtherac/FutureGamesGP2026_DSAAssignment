@@ -1,4 +1,4 @@
-
+//Cat
 using UnityEngine;
 
 public class TerminalLogoAnimation : MonoBehaviour {

@@ -7,6 +7,11 @@
       "text": "Investigator detected. One fatality has been reported in the mining sector. I can provide access to available station records. What do you need?",
       "choices": [
         {
+            "text": "Show me the case file",
+            "nextNodeId": "",
+            "actionId": "open_case_file"
+        },
+        {
           "text": "Review engine room access logs",
           "nextNodeId": "access_logs",
           "actionId": ""
